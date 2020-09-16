@@ -1,14 +1,14 @@
 package ru.bdm.mtg
 
-case class AllSet[T](map:Map[T, Int] = Map.empty) {
+case class AllSet[T](map:Map[T, Int] = Map.empty[T, Int]) {
   def +(t: T): AllSet[T] = {
     if (map.contains(t))
       AllSet(map + (t -> (map.apply(t) + 1)))
     else
-      AllSet(map + (t -> 0))
+      AllSet(map + (t -> 1))
   }
   def -(t: T): AllSet[T] = {
-    if (map.contains(t) && map(t) > 0)
+    if (map.contains(t) && map(t) > 1)
       AllSet(map + (t -> (map.apply(t) - 1)))
     else
       AllSet(map - t)
