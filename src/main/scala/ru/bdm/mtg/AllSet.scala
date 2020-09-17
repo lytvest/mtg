@@ -29,6 +29,7 @@ object AllSet {
     def --~(ts: Seq[T]): Map[T, Int] =
       ts.foldRight(this) { case (t, set) => set -~ t }.map
 
+
     def contains(t: T): Boolean =
       map.contains(t)
 

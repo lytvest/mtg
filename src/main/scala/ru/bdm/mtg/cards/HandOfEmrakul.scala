@@ -8,7 +8,7 @@ class HandOfEmrakul extends Card {
   override def cost: String = "CCCCCCCCC"
   override def nextStates(current: State): Seq[State] = {
     current.manaPool pay (cost) map { pool =>
-      current.copy(battlefield = current.battlefield +~ this, hand = current.hand -~ this, manaPool = pool)
+      current.copy(battlefield = current.battlefield +~ this, manaPool = pool)
     }
   }
 }
