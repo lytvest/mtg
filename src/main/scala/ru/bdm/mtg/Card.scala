@@ -12,16 +12,29 @@ abstract class Card {
   }
   def cost:String = ""
 
-  def payMana(current:State):Seq[State] = {
+  def payMana(current:State, removedHand:Boolean):Seq[State] = {
     current.manaPool.pay(cost) flatMap { pool =>
-      nextStates(current.copy(manaPool = pool, hand = current.hand -~ this))
+      nextStates(current.copy(manaPool = pool,
+        hand = if(removedHand) current.hand -~ this else current.hand))
     }
   }
 
-  override def equals(obj: Any): Boolean = {
-    obj == this || getClass == obj.getClass
-  }
+  def discard(current:State): State = current
 
   def name:String =
     getClass.getSimpleName
+
+  def *(num:Int): Seq[Card] =
+    Seq.fill(num)(this)
+
+
+  override def equals(other: Any): Boolean = other match {
+    case that: Card =>
+        name == that.name
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    name.hashCode()
+  }
 }

@@ -15,4 +15,5 @@ class PeatBog(active:Boolean = false, count:Int = 2) extends Land(active) {
     }
   }
 
+  override def copy(active: Boolean): Land = new PeatBog(active, count)
 }

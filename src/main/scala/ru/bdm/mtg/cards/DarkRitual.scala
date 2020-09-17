@@ -5,7 +5,7 @@ import ru.bdm.mtg.AllSet._
 class DarkRitual extends Card{
   override def cost = "B"
   override def nextStates(current: State): Seq[State] = {
-    Seq(current.copy(manaPool = new AllSetOps(current.manaPool) ++~ "BBB"))
+    Seq(current.copy(manaPool = current.manaPool ++~ "BBB"))
   }
 
 }

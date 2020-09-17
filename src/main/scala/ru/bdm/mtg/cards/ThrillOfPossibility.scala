@@ -4,12 +4,12 @@ import ru.bdm.mtg.AllSet.AllSetOps
 import ru.bdm.mtg.ManaPool.ManaPoolOps
 import ru.bdm.mtg.{Card, ManaPool, State}
 
-class ThrillOfPossibility extends Card {
+class ThrillOfPossibility extends Card with Discarded {
   override def cost: String = "CR"
 
-  override def nextStates(current: State): Seq[State] = {
-    current.hand getCombinations(1) map { discarded =>
-      current.copy(hand = current.hand +~ RandomCard +~ RandomCard --~ discarded.keys.toSeq)
-    }
+  override def numberDiscard: Int = 1
+
+  override def states(current: State, cards: Seq[Card]): Seq[State] = {
+    Seq(current.copy(hand = current.hand ++~ (RandomCard * 2)))
   }
 }

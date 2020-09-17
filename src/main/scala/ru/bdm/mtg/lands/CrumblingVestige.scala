@@ -25,4 +25,5 @@ class CrumblingVestige(active:Boolean = false) extends Land(active) {
     )
   }
 
+  override def copy(active: Boolean): Land = new CrumblingVestige(active)
 }

@@ -14,4 +14,6 @@ class SandstoneNeedle(active:Boolean = false, count:Int = 2) extends Land(active
         lands = current.lands - this))
     }
   }
+
+  override def copy(active: Boolean): Land = new SandstoneNeedle(active, count)
 }

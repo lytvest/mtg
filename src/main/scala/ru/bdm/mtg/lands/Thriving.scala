@@ -27,4 +27,8 @@ class Thriving(val meColor:Char, val restColor:String, active:Boolean = false, c
   override def tap(state: State): Seq[State] = {
     Seq(cre(state, meColor), cre(state, choose.get))
   }
+
+  override def copy(active: Boolean): Land = new Thriving(meColor, restColor, active, choose)
+
+  override def name: String = super.name + meColor
 }

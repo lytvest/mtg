@@ -7,6 +7,6 @@ class DangerousWager extends Card {
   override def cost: String = "CU"
 
   override def nextStates(current: State): Seq[State] = {
-    Seq(current.copy(hand = empty[Card] +~ RandomCard +~ RandomCard))
+    Seq(current.copy(hand = empty[Card] ++~ (RandomCard * 2)))
   }
 }

@@ -46,6 +46,12 @@ object AllSet {
       }
       currentSet
     }
+
+    def getSeq: Seq[T] = {
+      map.flatMap { case (obj, count) =>
+        Seq.fill(count)(obj)
+      } toSeq
+    }
   }
 
   def empty[T] = Map.empty[T, Int]
