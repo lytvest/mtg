@@ -1,11 +1,11 @@
 package ru.bdm.mtg.cards
 
 import ru.bdm.mtg.{Card, State}
-
+import ru.bdm.mtg.AllSet._
 class DarkRitual extends Card{
+  override def cost = "B"
   override def nextStates(current: State): Seq[State] = {
-    Seq(current.copy(manaPool = current.manaPool ++ "BB", hand = current.hand - this))
+    Seq(current.copy(manaPool = new AllSetOps(current.manaPool) ++~ "BBB"))
   }
 
-  override def isPlayable(current: State): Boolean = basicIsPlayable(current, "B")
 }

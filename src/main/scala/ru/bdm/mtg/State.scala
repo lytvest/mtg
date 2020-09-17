@@ -2,12 +2,12 @@ package ru.bdm.mtg
 
 
 case class State(
-             graveyard: AllSet[Card] = AllSet[Card](),
-             hand: AllSet[Card] = AllSet[Card](),
-             battlefield: AllSet[Card] = AllSet[Card](),
-             library: AllSet[Card] = AllSet[Card](),
-             lands: AllSet[Card] = AllSet[Card](),
-             manaPool: AllSet[Char] = AllSet[Char](),
+             graveyard: AllSet.Type[Card] = AllSet.empty[Card],
+             hand: AllSet.Type[Card] = AllSet.empty[Card],
+             battlefield: AllSet.Type[Card] = AllSet.empty[Card],
+             library: AllSet.Type[Card] = AllSet.empty[Card],
+             lands: AllSet.Type[Card] = AllSet.empty[Card],
+             manaPool: ManaPool.Type = AllSet.empty[Char],
              discard: Int = 0
            ) {
 
