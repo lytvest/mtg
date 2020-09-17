@@ -16,12 +16,12 @@ class ManaPool(mana: Map[Char, Int]) extends AllSet[Char](mana) {
         else pool -= mana
     }
 
-    def getStates(deep:Int, pool:AllSet[Char]): List[AllSet[Char]] ={
+    def getStates(deep:Int, pool:AllSet[Char], prev:Int = 0): List[AllSet[Char]] ={
       if(deep == 0)
         return List(pool)
       var list = List.empty[AllSet[Char]]
       for(((mana, number), index) <- pool.map.zipWithIndex) {
-          list :::= getStates(deep - 1, pool - mana)
+          if(index >= prev) list :::= getStates(deep - 1, pool - mana, index)
       }
       list
     }
