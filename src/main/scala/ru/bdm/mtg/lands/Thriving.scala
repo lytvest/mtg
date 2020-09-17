@@ -1,12 +1,13 @@
 package ru.bdm.mtg.lands
 
 import ru.bdm.mtg.{Land, State}
+import ru.bdm.mtg.AllSet._
 
 class Thriving(val meColor:Char, val restColor:String, active:Boolean = false, choose:Option[Char] = None) extends Land(active){
 
   private def newState(current:State, color:Char) = {
     current.copy(hand = current.hand - this,
-      lands = current.lands + new Thriving(meColor, restColor, false, Some(color)),
+      lands = current.lands +~ new Thriving(meColor, restColor, false, Some(color)),
       )
   }
 
@@ -18,8 +19,8 @@ class Thriving(val meColor:Char, val restColor:String, active:Boolean = false, c
     }
   }
   private def cre(current:State, color: Char) = {
-    current.copy(manaPool = current.manaPool + color,
-      lands = (current.lands - this) + new Thriving(meColor, restColor, false, choose)
+    current.copy(manaPool = current.manaPool +~ color,
+      lands = (current.lands - this) +~ new Thriving(meColor, restColor, false, choose)
     )
   }
 

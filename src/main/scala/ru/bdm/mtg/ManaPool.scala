@@ -1,34 +1,48 @@
 package ru.bdm.mtg
 
-class ManaPool(mana: Map[Char, Int]) extends AllSet[Char](mana) {
-  def pay(cost:String): List[AllSet[Char]] ={
-    var states = List[AllSet[Char]]()
 
-    var pool = this.copy()
-    var c = 0
-    for(mana <- cost){
-      if(mana != 'C') {
-        if (!pool.contains(mana)) return List.empty[AllSet[Char]]
-        else pool -= mana
+object ManaPool {
+  import AllSet._
+
+  type ManaPool = Map[Char, Int]
+  type Type = ManaPool
+
+  implicit class ManaPoolOps[T](val map: Map[Char, Int]) {
+
+    def payColorMana(cost: String): Option[ManaPool] = {
+      Some(cost.foldRight(map){ case (color, pool) =>
+        if (pool.contains(color))
+          pool -~ color
+        else
+          return None
+      })
+    }
+    def canPay(cost:String): Boolean = {
+      getProperties(cost) match {
+        case (leftC, pool) =>
+        if(pool.isDefined)
+          pool.get.values.sum >= leftC
+        else false
       }
-      else
-        if(!pool.contains(mana)) c += 1
-        else pool -= mana
     }
 
-    def getStates(deep:Int, pool:AllSet[Char]): List[AllSet[Char]] ={
-      if(deep == 0)
-        return List(pool)
-      var list = List.empty[AllSet[Char]]
-      for(((mana, number), index) <- pool.map.zipWithIndex) {
-          list :::= getStates(deep - 1, pool - mana)
-      }
-      list
+    private def getProperties(cost: String): (Int, Option[ManaPool]) = {
+      val definedCost = cost.filter(_ != 'C')
+      val countC = cost.count(_ == 'C')
+      val paidC = Math.min(countC, map.getOrElse('C', 0))
+      val pool = payColorMana(definedCost + "C" * paidC)
+      (countC - paidC, pool)
     }
-    states = getStates(c, pool)
-    states
+
+    def pay(cost: String): List[ManaPool] = {
+      getProperties(cost) match { case (leftC, pool) =>
+        if(pool.isDefined) pool.get.getCombinations(leftC)
+        else List.empty
+      }
+    }
+
+    def write: String = map.map{case (ch, count) => ch * count}.mkString("")
   }
 
+  def apply(s: String): ManaPool = new AllSetOps(Map.empty[Char, Int]) ++~ s
 }
-
-//object ManaPool{ def apply(mana:String)=new ManaPool((new AllSet[Char]()++mana).map)}
