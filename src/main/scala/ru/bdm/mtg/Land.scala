@@ -12,7 +12,7 @@ abstract class Land(val active: Boolean = false) extends Card {
   }
 
   override def isPlayable(current: State): Boolean = {
-    true
+    active || current.hand.contains(this)
   }
 
   def tap(state: State): Seq[State]

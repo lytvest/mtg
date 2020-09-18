@@ -20,6 +20,7 @@ class CrumblingVestige(active:Boolean = false) extends Land(active) {
   }
 
   override def tap(current: State): Seq[State] = {
+    println("tap")
     Seq(current.copy(manaPool = current.manaPool +~ 'C',
       lands = (current.lands - this) +~ new CrumblingVestige(false))
     )

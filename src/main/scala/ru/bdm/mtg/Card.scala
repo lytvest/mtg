@@ -14,8 +14,8 @@ abstract class Card {
 
   def payMana(current:State, removedHand:Boolean):Seq[State] = {
     current.manaPool.pay(cost) flatMap { pool =>
-      nextStates(current).map(_.copy(manaPool = pool,
-        hand = if(removedHand) current.hand -~ this else current.hand))
+      nextStates(current.copy(manaPool = pool))
+        .map(_.copy(hand = if(removedHand) current.hand -~ this else current.hand))
     }
   }
 
@@ -38,5 +38,5 @@ abstract class Card {
     name.hashCode()
   }
 
-  override def toString: String = name
+  override def toString: String = s"$name-$cost"
 }
