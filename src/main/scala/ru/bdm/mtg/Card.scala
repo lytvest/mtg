@@ -14,7 +14,7 @@ abstract class Card {
 
   def payMana(current:State, removedHand:Boolean):Seq[State] = {
     current.manaPool.pay(cost) flatMap { pool =>
-      nextStates(current.copy(manaPool = pool,
+      nextStates(current).map(_.copy(manaPool = pool,
         hand = if(removedHand) current.hand -~ this else current.hand))
     }
   }
@@ -37,4 +37,6 @@ abstract class Card {
   override def hashCode(): Int = {
     name.hashCode()
   }
+
+  override def toString: String = name
 }

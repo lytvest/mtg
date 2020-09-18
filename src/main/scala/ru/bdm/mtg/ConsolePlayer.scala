@@ -4,7 +4,8 @@ import scala.io.StdIn
 
 class ConsolePlayer extends Player{
   override def chooseState(current: State, outcomes: Seq[State]): Int = {
-    println(outcomes.zipWithIndex.mkString("Выбери карту:\n", "\n", "Введите -1 для следующего хода"))
+    println("Текущее состояние:\n" + current + "\n")
+    println(outcomes.zipWithIndex.map{case(f,s) => (s,f)}.mkString("Выбери следующие состояние:\n", "\n", "\nВведите -1 для следующего хода"))
     StdIn.readInt()
   }
 }

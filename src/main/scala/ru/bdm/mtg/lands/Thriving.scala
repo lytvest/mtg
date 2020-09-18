@@ -25,6 +25,7 @@ class Thriving(val meColor:Char, val restColor:String, active:Boolean = false, c
   }
 
   override def tap(state: State): Seq[State] = {
+    println(state)
     Seq(cre(state, meColor), cre(state, choose.get))
   }
 

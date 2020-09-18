@@ -24,4 +24,6 @@ abstract class Land(val active: Boolean = false) extends Card {
     case _ => false
   }
   def copy(active:Boolean = this.active): Land
+
+  override def toString: String = super.toString + "(" + active + ")"
 }
