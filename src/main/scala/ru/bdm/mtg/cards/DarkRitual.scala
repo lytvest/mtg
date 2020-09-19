@@ -2,7 +2,7 @@ package ru.bdm.mtg.cards
 
 import ru.bdm.mtg.Card
 import ru.bdm.mtg.actions.{Action, AddMana, RemoveFromHand}
-import ru.bdm.mtg.conditions.{Condition, Discard, InHand, IsPlayFromHandAndMana, Mana}
+import ru.bdm.mtg.conditions.{Condition, Discard, InHand, IsPlayFromHandAndMana, CanPay}
 
 class DarkRitual extends Card {
 

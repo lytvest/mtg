@@ -1,5 +1,5 @@
 package ru.bdm.mtg
 
-trait Player {
+trait Agent {
   def chooseState(current:State, outcomes:Seq[State]): Int
 }

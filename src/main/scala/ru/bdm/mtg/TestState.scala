@@ -6,7 +6,6 @@ object TestState extends App {
 
 
 
-
   val game = new Battle(Deck.allCard, new ConsolePlayer)
 
   game.run()

@@ -11,14 +11,14 @@ class Thriving(val meColor: Char, val restColor: String, active: Boolean = false
     (IsPlayFromHand(this) and NoPlayedLand) ->
       ((state: State) =>
         restColor flatMap { pool =>
-          RemoveFromHand(this) * AddLand(new Thriving(meColor, restColor, active, Some(pool))) * AddMana("" + pool) act state
+          RemoveFromHand(this) * AddLand(new Thriving(meColor, restColor, active, Some(pool))) act state
         }
       ),
-    IsTappedLand(this) -> Rotate(this) * (AddMana("" + meColor) or LazyAction(() => AddMana("" + choose.get))),
+    IsTappedLand(this) -> Tap(this) * (AddMana("" + meColor) or LazyAction(() => AddMana("" + choose.get))),
     Discard.standard(this)
   )
 
   override def copy(active: Boolean): Land = new Thriving(meColor, restColor, active, choose)
 
-  override def name: String = super.name + meColor
+  override def name: String = super.name + meColor + choose.getOrElse("")
 }

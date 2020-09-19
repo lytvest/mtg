@@ -17,6 +17,7 @@ object ManaPool {
           return None
       })
     }
+
     def canPay(cost:String): Boolean = {
       getProperties(cost) match {
         case (leftC, pool) =>

@@ -3,7 +3,7 @@ package ru.bdm.mtg
 import ru.bdm.mtg.AllSet.AllSetOps
 import ru.bdm.mtg.actions.{Action, NextTurn}
 
-class Battle(val deck: AllSet.Type[Card], player: Player) {
+class Battle(val deck: AllSet.Type[Card], player: Agent) {
   private val shDeck = Deck.shuffleTheDeck(deck getSeq)
 
   var currentState: State = State(hand = AllSet.empty[Card] ++~ shDeck.slice(0, 7), library = shDeck.drop(7))
