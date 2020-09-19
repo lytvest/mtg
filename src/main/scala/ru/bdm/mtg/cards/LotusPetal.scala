@@ -1,14 +1,13 @@
 package ru.bdm.mtg.cards
 
-import ru.bdm.mtg.AllSet._
-import ru.bdm.mtg.{Card, State}
-import ru.bdm.mtg.AllSet._
+import ru.bdm.mtg.Card
+import ru.bdm.mtg.actions.{Action, AddDifferentColors, RemoveFromHand}
+import ru.bdm.mtg.conditions.{Condition, Discard, InHand, IsPlay}
 
 class LotusPetal extends Card {
-  override def cost: String = ""
-  override def nextStates(current: State): Seq[State] = {
-    "WUBR" map { color =>
-      current.copy(manaPool = current.manaPool +~ color)
-    }
-  }
+
+  override val description: Map[Condition, Action] = Map(
+    (IsPlay and InHand(this)) -> AddDifferentColors("WUBR", 1) * RemoveFromHand(this),
+    Discard.standard(this)
+  )
 }

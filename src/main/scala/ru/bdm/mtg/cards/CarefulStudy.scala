@@ -2,12 +2,15 @@ package ru.bdm.mtg.cards
 
 import ru.bdm.mtg.{Card, State}
 import ru.bdm.mtg.AllSet._
+import ru.bdm.mtg.actions.{Action, AddDiscard, RemoveFromHandAndMana, TakeCards}
+import ru.bdm.mtg.conditions.{Condition, Discard, IsPlayFromHandAndMana}
 
-class CarefulStudy extends Card with Discarded {
-  override def cost: String = "U"
+class CarefulStudy extends Card {
+  val cost: String = "U"
 
-  override def numberDiscard: Int = 2
 
-  override def states(current: State, cards: Seq[Card]): Seq[State] =
-    Seq(current.copy(hand = current.hand ++~ (RandomCard * 2)))
+  override val description: Map[Condition, Action] = Map(
+    IsPlayFromHandAndMana(this, cost) -> TakeCards(2) * AddDiscard(2) * RemoveFromHandAndMana(this, cost),
+    Discard.standard(this)
+  )
 }

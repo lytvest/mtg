@@ -1,6 +1,7 @@
 package ru.bdm.mtg
 
 import ru.bdm.mtg.AllSet.AllSetOps
+import ru.bdm.mtg.lands.Land
 
 
 case class State(
@@ -9,12 +10,21 @@ case class State(
                   graveyard: AllSet.Type[Card] = AllSet.empty[Card],
                   battlefield: AllSet.Type[Card] = AllSet.empty[Card],
                   lands: AllSet.Type[Land] = AllSet.empty[Land],
-                  library: Seq[Card] = Seq.empty[Card]
+                  library: Seq[Card] = Seq.empty[Card],
+                  phase: Phase.Phase = Phase.play,
+                  takeCards:Int = 0,
+                  discard:Int = 0,
+                  numberTurn:Int = 1,
+                  playedLand:Boolean = false
                 ){
   override def toString: String =
     s"   mana{${manaPool.mkString(", ")}}" +
+      s"   turn=$numberTurn" +
       s"   hand{${hand.mkString(", ")}}" +
       s"   lands{${lands.mkString(", ")}}" +
+      s"   takeCards=$takeCards" +
+      s"   discard=$discard" +
+      s"   playedLand=$playedLand" +
       s"   graveyard{${graveyard.mkString(", ")}}" +
       s"   battlefield{${battlefield.mkString(", ")}}" +
       s"   library{${library.size}}"
@@ -26,7 +36,12 @@ case class State(
       changes(graveyard, next.graveyard),
       changes(battlefield, next.battlefield),
       changes(lands, next.lands),
-      next.library
+      next.library,
+      next.phase,
+      next.takeCards,
+      next.discard,
+      next.numberTurn,
+      next.playedLand
     )
   }
   def changes[T](first: AllSet.Type[T], second: AllSet.Type[T]): Map[T, Int] = {
@@ -44,6 +59,9 @@ case class State(
     }
     result
   }
+}
+object State {
+
 }
 
 

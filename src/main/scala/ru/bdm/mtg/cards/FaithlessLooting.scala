@@ -1,20 +1,15 @@
 package ru.bdm.mtg.cards
 
 import ru.bdm.mtg.AllSet.AllSetOps
+import ru.bdm.mtg.actions.{Action, AddGraveyard, DiscardCard, RemoveFromGraveyard, RemoveFromHandAndMana, RemoveMana, TakeCards}
+import ru.bdm.mtg.conditions.{Condition, Discard, InGraveyard, IsPlay, IsPlayFromHandAndMana, Mana}
 import ru.bdm.mtg.{Card, State}
 
-class FaithlessLooting(override val cost: String = "R") extends Card with DiscardToGraveyard with Discarded {
+class FaithlessLooting() extends Card  {
 
-  override def numberDiscard = 2
-  override def states(current:State, cards:Seq[Card]): Seq[State] = {
-    Seq(
-      if (cost == "R") current.copy(
-        hand = current.hand ++~ (RandomCard * 2) ,
-        graveyard = current.graveyard +~ new FaithlessLooting("CCR")
-      )
-      else current.copy(
-        hand = current.hand ++~ (RandomCard * 2)
-      )
-    )
-  }
+  override val description: Map[Condition, Action] = Map(
+    IsPlayFromHandAndMana(this, "R") -> TakeCards(2) * RemoveFromHandAndMana(this, "R") * AddGraveyard(this),
+    (IsPlay and InGraveyard(this) and Mana("CCR")) -> TakeCards(2) * RemoveFromGraveyard(this) * RemoveMana("CCR"),
+    Discard(this) -> DiscardCard(this) * AddGraveyard(this)
+  )
 }

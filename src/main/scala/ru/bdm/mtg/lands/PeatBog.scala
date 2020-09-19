@@ -1,19 +1,17 @@
 package ru.bdm.mtg.lands
 
-import ru.bdm.mtg.{Land, State}
-import ru.bdm.mtg.AllSet._
+import ru.bdm.mtg.actions._
+import ru.bdm.mtg.conditions._
 
-class PeatBog(active:Boolean = false, count:Int = 2) extends Land(active) {
+class PeatBog(active: Boolean = false, count: Int = 2) extends Land(active) {
 
-  override def tap(current: State): Seq[State] = {
-    if(count - 1 > 0)
-      Seq(current.copy(manaPool = current.manaPool ++~ "BB",
-        lands = (current.lands - this) +~ new PeatBog(false, count - 1)))
-    else {
-      Seq(current.copy(manaPool = current.manaPool ++~ "BB",
-        lands = current.lands - this))
-    }
-  }
+  override val description: Map[Condition, Action] = Map(
+    (IsPlayFromHand(this) and NoPlayedLand) -> AddLand(this) * RemoveFromHand(this),
+    IsTappedLand(this) -> AddMana("BB") * TemporaryLand(this, count, new PeatBog(false, _)),
+    Discard.standard(this)
+  )
 
   override def copy(active: Boolean): Land = new PeatBog(active, count)
+
+  override def toString: String = super.toString + s"[$count]"
 }

@@ -1,9 +1,13 @@
 package ru.bdm.mtg
 
-import ru.bdm.mtg.ManaPool.ManaPoolOps
-import ru.bdm.mtg.AllSet._
+import ru.bdm.mtg.AllSet.AllSetOps
+
 object TestState extends App {
-  val game = new Engine(Deck.allCard, new ConsolePlayer)
-  while (true)
-    game.one()
+
+
+
+
+  val game = new Battle(Deck.allCard, new ConsolePlayer)
+
+  game.run()
 }

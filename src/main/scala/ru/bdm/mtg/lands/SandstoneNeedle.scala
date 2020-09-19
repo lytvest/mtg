@@ -1,19 +1,16 @@
 package ru.bdm.mtg.lands
 
-import ru.bdm.mtg.{Land, State}
-import ru.bdm.mtg.AllSet._
+import ru.bdm.mtg.actions._
+import ru.bdm.mtg.conditions._
 
-class SandstoneNeedle(active:Boolean = false, count:Int = 2) extends Land(active) {
+class SandstoneNeedle(active: Boolean = false, count: Int = 2) extends Land(active) {
 
-  override def tap(current: State): Seq[State] = {
-    if(count - 1 > 0)
-      Seq(current.copy(manaPool = current.manaPool ++~ "RR",
-        lands = (current.lands - this) +~ new SandstoneNeedle(false, count - 1)))
-    else {
-      Seq(current.copy(manaPool = current.manaPool ++~ "RR",
-        lands = current.lands - this))
-    }
-  }
+
+  override val description: Map[Condition, Action] = Map(
+    (IsPlayFromHand(this) and NoPlayedLand) -> AddLand(this) * RemoveFromHand(this),
+    IsTappedLand(this) -> AddMana("RR") * TemporaryLand(this, count, new SandstoneNeedle(false, _)),
+    Discard.standard(this)
+  )
 
   override def copy(active: Boolean): Land = new SandstoneNeedle(active, count)
 }

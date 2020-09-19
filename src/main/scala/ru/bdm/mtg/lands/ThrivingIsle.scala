@@ -1,3 +1,5 @@
 package ru.bdm.mtg.lands
 
-class ThrivingIsle extends Thriving('U', "RBW")
+object ThrivingIsle {
+  def apply(): Thriving = new Thriving('U', "RBW")
+}

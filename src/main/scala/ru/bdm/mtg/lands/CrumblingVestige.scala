@@ -1,30 +1,19 @@
 package ru.bdm.mtg.lands
 
-import ru.bdm.mtg.{Land, State}
+import ru.bdm.mtg.State
 import ru.bdm.mtg.AllSet._
+import ru.bdm.mtg.actions.{Action, AddDifferentColors, AddLand, AddMana, RemoveFromHand, Rotate}
+import ru.bdm.mtg.conditions.{Condition, Discard, InHand, Is, IsPlay, IsPlayFromHand, IsPlayFromHandAndMana, IsTappedLand, NoPlayedLand, Not}
 
 class CrumblingVestige(active:Boolean = false) extends Land(active) {
 
-  private def newState(current:State, color:Char) = {
-    current.copy(hand = current.hand - this,
-      lands = current.lands +~ this,
-    manaPool = current.manaPool +~ color)
-  }
 
-  override def nextStates(current: State): Seq[State] = {
-    if(current.hand.contains(this)){
-      "WUBR".map(newState(current, _))
-    } else {
-      tap(current)
-    }
-  }
+  override val description: Map[Condition, Action] = Map(
+    (IsPlayFromHand(this) and NoPlayedLand) -> AddLand(this) * RemoveFromHand(this) * AddDifferentColors("WUBR", 1),
+    IsTappedLand(this) -> Rotate(this) * AddMana("C"),
+    Discard.standard(this)
+  )
 
-  override def tap(current: State): Seq[State] = {
-    println("tap")
-    Seq(current.copy(manaPool = current.manaPool +~ 'C',
-      lands = (current.lands - this) +~ new CrumblingVestige(false))
-    )
-  }
 
   override def copy(active: Boolean): Land = new CrumblingVestige(active)
 }

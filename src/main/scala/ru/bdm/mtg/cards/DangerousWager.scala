@@ -1,12 +1,13 @@
 package ru.bdm.mtg.cards
 
-import ru.bdm.mtg.AllSet.{AllSetOps, empty}
-import ru.bdm.mtg.{AllSet, Card, State}
+import ru.bdm.mtg.Card
+import ru.bdm.mtg.actions.{Action, RemoveFromHand, RemoveMana, TakeCards}
+import ru.bdm.mtg.conditions.{Condition, Discard, IsPlayFromHandAndMana}
 
 class DangerousWager extends Card {
-  override def cost: String = "CU"
-
-  override def nextStates(current: State): Seq[State] = {
-    Seq(current.copy(hand = empty[Card] ++~ (RandomCard * 2)))
-  }
+  val cost = "CU"
+  override val description: Map[Condition, Action] = Map(
+    IsPlayFromHandAndMana(this, cost) -> TakeCards(2) * RemoveFromHand(this) * RemoveMana(cost),
+    Discard.standard(this)
+  )
 }

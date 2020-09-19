@@ -1,13 +1,16 @@
 package ru.bdm.mtg.cards
 
 import ru.bdm.mtg.AllSet.{AllSetOps, empty}
+import ru.bdm.mtg.actions.{Action, TakeCards}
+import ru.bdm.mtg.conditions.{Condition, IsPlayFromHandAndMana}
 import ru.bdm.mtg.{Card, State}
 
 class TolarianWinds extends Card {
-  override def cost: String = "CU"
 
-  override def nextStates(current: State): Seq[State] = {
-    val cards = current.hand.values.sum
-    Seq(current.copy(hand = Map(RandomCard -> cards)))
-  }
+  override val description: Map[Condition, Action] = Map(
+    IsPlayFromHandAndMana(this, "CU") -> ((state: State) => {
+      val cards = state.hand.values.sum
+      TakeCards(cards).act(state)
+    })
+  )
 }
