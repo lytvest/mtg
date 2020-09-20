@@ -11,23 +11,36 @@ class Battle(val deck: AllSet.Type[Card], player: Agent) {
 
   def run(): Unit = {
     while (currentState.numberTurn < 30) {
-      while (currentState.takeCards > 0) {
-        setPhase(Phase.take)
-        val actives = getActiveActions
-        if (actives.isEmpty)
-          takeCards
-        else {
-          choosePlayerState(actives)
-        }
-      }
-      while (currentState.discard > 0) {
-        setPhase(Phase.discard)
-        val actives = getActiveActions
-        choosePlayerState(actives)
-      }
+      if (currentState.phase == Phase.takeFirst)
+        takeAll()
+      if (currentState.phase == Phase.discardFirst)
+        discardAll()
+      takeAll()
+      discardAll()
+      currentState = currentState.copy(discard = 0, takeCards = 0)
       setPhase(Phase.play)
       val actives = getActiveActions :+ NextTurn
       choosePlayerState(actives)
+    }
+  }
+
+  private def discardAll(): Unit = {
+    while (currentState.discard > 0 && currentState.hand.nonEmpty) {
+      setPhase(Phase.discard)
+      val actives = getActiveActions
+      choosePlayerState(actives)
+    }
+  }
+
+  private def takeAll(): Unit = {
+    while (currentState.takeCards > 0) {
+      setPhase(Phase.take)
+      val actives = getActiveActions
+      if (actives.isEmpty)
+        takeCards()
+      else {
+        choosePlayerState(actives)
+      }
     }
   }
 
@@ -37,8 +50,10 @@ class Battle(val deck: AllSet.Type[Card], player: Agent) {
 
   private def choosePlayerState(actives: Seq[Action]): Unit = {
     val choose = actives.flatMap(_.act(currentState))
-    val index = player.chooseState(currentState, choose)
-    currentState = choose(index)
+    if(choose.nonEmpty) {
+      val index = player.chooseState(currentState, choose)
+      currentState = choose(index)
+    }
   }
 
   private def takeCards(): Unit = {

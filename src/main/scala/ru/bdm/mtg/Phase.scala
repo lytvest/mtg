@@ -5,4 +5,6 @@ object Phase {
   val take = "take"
   val play = "play"
   val discard = "discard"
+  val takeFirst = "take"
+  val discardFirst = "drop"
 }
