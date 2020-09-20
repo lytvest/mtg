@@ -5,11 +5,9 @@ import ru.bdm.mtg.{ManaPool, State}
 
 case class AddDifferentColors(colors:String, number: Int) extends Action{
   override def act(state: State): Seq[State] = {
-    val a = ManaPool(colors).getCombinations(number) map { pool =>
+    ManaPool(colors).getCombinations(number) map { pool =>
       val mana = ManaPool(colors) --~ pool.getSeq
-      state.copy(manaPool = state.manaPool ++ mana)
+      state.copy(manaPool = state.manaPool ++~ mana.getSeq)
     }
-    println(a)
-    a
   }
 }
