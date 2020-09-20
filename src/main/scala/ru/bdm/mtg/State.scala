@@ -15,6 +15,7 @@ case class State(
                   takeCards:Int = 0,
                   discard:Int = 0,
                   numberTurn:Int = 1,
+                  endTurnDiscards:Int = 0,
                   playedLand:Boolean = false
                 ){
   override def toString: String =

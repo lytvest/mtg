@@ -10,7 +10,7 @@ class CarefulStudy extends Card {
 
 
   override val description: Map[Condition, Action] = Map(
-    IsPlayFromHandAndMana(this, cost) -> TakeCards(2) * AddDiscard(2) * RemoveFromHandAndMana(this, cost),
+    IsPlayFromHandAndMana(this, cost) ->AddDiscard(2) * TakeCards(2) * RemoveFromHandAndMana(this, cost),
     Discard.standard(this)
   )
 }

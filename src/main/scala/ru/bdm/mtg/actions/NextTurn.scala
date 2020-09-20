@@ -11,6 +11,8 @@ object NextTurn extends Action {
       manaPool = AllSet.empty[Char],
       numberTurn = state.numberTurn + 1,
       takeCards = if(isDrop) 1 else 0,
+      discard = state.endTurnDiscards,
+      endTurnDiscards = 0,
       lands = AllSet.empty[Land] ++~ state.lands.getSeq.map(_.copy(true)),
       playedLand = false
     ))
