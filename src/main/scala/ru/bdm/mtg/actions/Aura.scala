@@ -6,7 +6,7 @@ import ru.bdm.mtg.cards.DragonBreath
 
 case class Aura(creator:Card => Card) extends Action{
   override def act(state: State): Seq[State] =
-    state.battlefield.keys map { chooseCard =>
+    state.battlefield.keys.map{ chooseCard =>
       state.copy(battlefield = state.battlefield -~ chooseCard +~ creator(chooseCard))
-    } toSeq
+    }.toSeq
 }

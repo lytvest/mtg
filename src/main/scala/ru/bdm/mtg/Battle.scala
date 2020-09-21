@@ -4,7 +4,7 @@ import ru.bdm.mtg.AllSet.AllSetOps
 import ru.bdm.mtg.actions.{Action, NextTurn}
 
 class Battle(val deck: AllSet.Type[Card], player: Agent) {
-  private val shDeck = Deck.shuffleTheDeck(deck getSeq)
+  private val shDeck = Deck.shuffleTheDeck(deck.getSeq)
 
   var currentState: State = State(hand = AllSet.empty[Card] ++~ shDeck.slice(0, 7), library = shDeck.drop(7))
 
@@ -65,7 +65,7 @@ class Battle(val deck: AllSet.Type[Card], player: Agent) {
   private def getActiveActions:Seq[Action] = {
     allCards.flatMap(_.description.filter{ case (condition, action) =>
       condition.check(currentState)
-    }) map(_._2) toSeq
+    }).map(_._2).toSeq
   }
 
   private def allCards: Iterable[Card] =

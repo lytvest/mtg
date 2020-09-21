@@ -5,5 +5,5 @@ import ru.bdm.mtg.{Card, State}
 
 case class RemoveFromBattlefield(card:Card) extends Action{
   override def act(state: State): Seq[State] =
-    state.copy(battlefield = state.battlefield -~ card)
+    Seq(state.copy(battlefield = state.battlefield -~ card))
 }

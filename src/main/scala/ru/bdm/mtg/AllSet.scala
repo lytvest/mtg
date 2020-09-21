@@ -50,7 +50,7 @@ object AllSet {
     def getSeq: Seq[T] = {
       map.flatMap { case (obj, count) =>
         Seq.fill(count)(obj)
-      } toSeq
+      }.toSeq
     }
   }
 

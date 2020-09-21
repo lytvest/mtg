@@ -42,6 +42,7 @@ case class State(
       next.takeCards,
       next.discard,
       next.numberTurn,
+      next.endTurnDiscards,
       next.playedLand
     )
   }
