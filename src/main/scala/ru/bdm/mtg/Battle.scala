@@ -18,10 +18,22 @@ class Battle(val deck: AllSet.Type[Card], player: Agent) {
       takeAll()
       discardAll()
       currentState = currentState.copy(discard = 0, takeCards = 0)
+
+      shuffleLibrary()
+
       setPhase(Phase.play)
       val actives = getActiveActions :+ NextTurn
       choosePlayerState(actives)
     }
+  }
+
+  private def shuffleLibrary(): Unit = {
+    if (currentState.shuffle)
+      currentState = currentState.copy(
+        library = Deck.shuffleTheDeck(currentState.library ++ currentState.верхКолоды),
+        верхКолоды = Seq.empty[Card],
+        shuffle = false
+      )
   }
 
   private def discardAll(): Unit = {
@@ -57,8 +69,11 @@ class Battle(val deck: AllSet.Type[Card], player: Agent) {
   }
 
   private def takeCards(): Unit = {
-    currentState = currentState.copy(hand = currentState.hand ++~ currentState.library.slice(0, currentState.takeCards),
-      library = currentState.library.drop(currentState.takeCards),
+    val lib = currentState.верхКолоды ++ currentState.library
+    currentState = currentState.copy(
+      hand = currentState.hand ++~ lib.slice(0, currentState.takeCards),
+      верхКолоды = currentState.верхКолоды.drop(currentState.takeCards),
+      library = currentState.library.drop(Math.max(currentState.takeCards - currentState.верхКолоды.size, 0)),
       takeCards = 0)
   }
 
@@ -69,6 +84,6 @@ class Battle(val deck: AllSet.Type[Card], player: Agent) {
   }
 
   private def allCards: Iterable[Card] =
-    currentState.hand.keys ++ currentState.lands.keys ++ currentState.graveyard.keys
+    currentState.hand.keys ++ currentState.lands.keys ++ currentState.graveyard.keys ++ currentState.battlefield.keys
 
 }
