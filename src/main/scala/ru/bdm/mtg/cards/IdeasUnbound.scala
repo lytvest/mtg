@@ -1,8 +1,8 @@
 package ru.bdm.mtg.cards
 
 import ru.bdm.mtg.Card
-import ru.bdm.mtg.actions.{Action, AddDiscard, AddEndTurnDiscard, RemoveFromHand, RemoveFromHandAndMana, TakeCards}
-import ru.bdm.mtg.conditions.{Condition, Discard, InHand, IsPlay, IsPlayFromHandAndMana}
+import ru.bdm.mtg.actions.{Action, AddEndTurnDiscard, RemoveFromHandAndMana, TakeCards}
+import ru.bdm.mtg.conditions.{Condition, Discard, IsPlayFromHandAndMana}
 
 class IdeasUnbound extends Card {
   val cost = "UU"

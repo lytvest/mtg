@@ -61,7 +61,7 @@ class Battle(val deck: AllSet.Type[Card], player: Agent) {
   }
 
   private def choosePlayerState(actives: Seq[Action]): Unit = {
-    val choose = actives.flatMap(_.act(currentState))
+    val choose = actives.flatMap(_.act(currentState)).distinct
     if(choose.nonEmpty) {
       val index = player.chooseState(currentState, choose)
       currentState = choose(index)

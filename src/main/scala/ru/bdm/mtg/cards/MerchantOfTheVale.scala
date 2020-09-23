@@ -1,16 +1,17 @@
 package ru.bdm.mtg.cards
 
 import ru.bdm.mtg.Card
-import ru.bdm.mtg.actions.{Action, AddBattlefield, AddDifferentColors, AddDiscard, DiscardCard, RemoveFromHandAndMana, RemoveMana, TakeCards}
-import ru.bdm.mtg.conditions.{CanPay, Condition, Discard, IsBattlefield, InHand, Is, IsPlay, IsPlayFromHandAndMana}
+import ru.bdm.mtg.actions.{Action, AddBattlefield, AddDifferentColors, AddDiscard, DiscardCard, RemoveFromBattlefield, RemoveFromHandAndMana, RemoveMana, TakeCards}
+import ru.bdm.mtg.conditions.{CanPay, Condition, CountInHand, Discard, InHand, Is, IsBattlefield, IsPlay, IsPlayFromHandAndMana}
 
 case class MerchantOfTheVale(exile:Boolean = false) extends Card {
 
   val cost = "CCR"
-  override val description: Map[Condition, Action] = Map(
+  override def description: Map[Condition, Action] = Map(
     IsPlayFromHandAndMana(this, cost) -> TakeCards(1) * AddDiscard(1) * RemoveFromHandAndMana(this, cost) * AddBattlefield(this),
-    (Is(!exile) and CanPay(cost) and IsBattlefield(this)) -> TakeCards(1) * AddDiscard(1) * RemoveMana(cost),
-    (IsPlay and InHand(this)) -> DiscardCard(this) * AddBattlefield(MerchantOfTheVale(true)),
+    (Is(!exile) and CanPay(cost) and IsBattlefield(this) and CountInHand(_ > 1)) -> TakeCards(1) * AddDiscard(1) * RemoveMana(cost),
+    IsPlayFromHandAndMana(this, "R") -> RemoveFromHandAndMana(this, "R") * AddBattlefield(MerchantOfTheVale(true)),
+    (Is(exile) and IsBattlefield(this)) -> RemoveFromBattlefield(this) * AddBattlefield(MerchantOfTheVale()),
     Discard(this) -> DiscardCard(this) * AddBattlefield(MerchantOfTheVale(true))
   )
 

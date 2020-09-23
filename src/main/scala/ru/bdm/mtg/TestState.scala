@@ -5,9 +5,11 @@ import ru.bdm.mtg.actions.{AddDifferentColors, RemoveMana}
 
 object TestState extends App {
 
-  println((ManaPool("WWUUBBRR") getCombinations 2) mkString("\n"))
-  val state = State(manaPool = AllSet.empty[Char] ++~ "CU")
-  println(AddDifferentColors("WWUUBBRR", 2) * RemoveMana("CU") act(state) mkString("\n"))
+//  println((ManaPool("WWUUBBRR") getCombinations 2) mkString("\n"))
+//  val state = State(manaPool = AllSet.empty[Char] ++~ "CU")
+//  println(AddDifferentColors("WWUUBBRR", 2) * RemoveMana("CU") act(state) mkString("\n"))
+
+  println(State(phase = "ok") == State(phase = "ok"))
 
   val game = new Battle(Deck.allCard, new ConsolePlayer)
   game.run()

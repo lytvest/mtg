@@ -10,7 +10,7 @@ abstract class Card {
   def name:String =
     getClass.getSimpleName
 
-  val description:Map[Condition, Action]
+  def description:Map[Condition, Action]
 
   def basicIsPlayable(current: State, cost:String): Boolean = {
     current.manaPool.canPay(cost)
