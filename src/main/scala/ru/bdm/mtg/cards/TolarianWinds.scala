@@ -1,0 +1,13 @@
+package ru.bdm.mtg.cards
+
+import ru.bdm.mtg.AllSet.{AllSetOps, empty}
+import ru.bdm.mtg.actions.{Action, AddDiscard, PayDiscardHand, RemoveMana, TakeCards}
+import ru.bdm.mtg.conditions.{Condition, Discard, IsPlayFromHandAndMana}
+import ru.bdm.mtg.{Card, State}
+
+class TolarianWinds extends Card {
+  override val description: Map[Condition, Action] = Map(
+    IsPlayFromHandAndMana(this, "CU") -> PayDiscardHand(this) * RemoveMana("CU"),
+    Discard.standard(this)
+  )
+}
