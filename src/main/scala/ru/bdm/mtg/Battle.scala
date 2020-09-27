@@ -11,7 +11,7 @@ import ru.bdm.mtg.actions.{Action, NextTurn}
 import ru.bdm.mtg.cards.{BreathOfLife, CarefulStudy, CatharticReunion, DangerousWager, DarkRitual, DeepAnalysis, Duress, Exhume, FaithlessLooting, HandOfEmrakul, IdeasUnbound, InsolentNeonate, LotusPetal, Manamorphose, MerchantOfTheVale, Ponder, RiseAgain, SimianSpiritGuide, ThrillOfPossibility, TolarianWinds, UlamogsCrusher}
 import ru.bdm.mtg.lands.{CrumblingVestige, Mountain, PeatBog, SandstoneNeedle, Thriving}
 
-class Battle(val deck: Seq[Card], player: Agent, seed: Long = System.currentTimeMillis()) {
+class Battle(val deck: Seq[Card], player: Agent, lesson:Lesson, seed: Long = System.currentTimeMillis()) {
   private val shuffler = new DeckShuffler(seed)
 
   var currentState: State = State(library = shuffler.shuffle(deck))
@@ -21,9 +21,11 @@ class Battle(val deck: Seq[Card], player: Agent, seed: Long = System.currentTime
 
   }
 
+
+
   def run(): Unit = {
     mall()
-    while (currentState.numberTurn < 10) {
+    while (lesson.isEnd(currentState)) {
       if (currentState.phase == Phase.takeFirst)
         takeAll()
       if (currentState.phase == Phase.discardFirst)
@@ -77,7 +79,9 @@ class Battle(val deck: Seq[Card], player: Agent, seed: Long = System.currentTime
     val choose = actives.flatMap(_.act(currentState)).distinct
     if (choose.nonEmpty) {
       val index = player.chooseStateServer(currentState, choose)
+      val oldState = currentState
       currentState = choose(index)
+      lesson.evaluate(oldState, currentState)
     }
   }
 
