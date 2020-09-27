@@ -4,7 +4,7 @@ import ru.bdm.mtg.{Agent, InputCreate, State}
 import ru.bdm.neurons.{Layer, NeuronSystem}
 
 class NeuronAgent(log: Boolean = false) extends Agent {
-  val layer = Layer(3) * Layer(3) * Layer(1)
+  val layer = Layer(30) * Layer(3) * Layer(1)
 
   val ns = NeuronSystem(layer).setRandomWeights()
 
