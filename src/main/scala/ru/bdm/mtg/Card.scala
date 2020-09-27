@@ -1,28 +1,26 @@
 package ru.bdm.mtg
 
-import ru.bdm.mtg.AllSet.AllSetOps
 import ru.bdm.mtg.ManaPool.ManaPoolOps
 import ru.bdm.mtg.actions.Action
-import ru.bdm.mtg.conditions.{Condition, False}
+import ru.bdm.mtg.conditions.Condition
 
-abstract class Card {
+trait Card {
 
-  def name:String =
+  def name: String =
     getClass.getSimpleName
 
-  def description:Map[Condition, Action]
+  def description: Map[Condition, Action]
 
-  def basicIsPlayable(current: State, cost:String): Boolean = {
+  def basicIsPlayable(current: State, cost: String): Boolean = {
     current.manaPool.canPay(cost)
   }
 
-  def *(num:Int): Seq[Card] =
+  def *(num: Int): Seq[Card] =
     Seq.fill(num)(this)
-
 
   override def equals(other: Any): Boolean = other match {
     case that: Card =>
-        name == that.name
+      name == that.name
     case _ => false
   }
 

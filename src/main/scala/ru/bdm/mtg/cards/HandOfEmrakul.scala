@@ -1,12 +1,10 @@
 package ru.bdm.mtg.cards
 
-import ru.bdm.mtg.AllSet.AllSetOps
-import ru.bdm.mtg.ManaPool.ManaPoolOps
-import ru.bdm.mtg.actions.{Action, AddBattlefield, AddGraveyard, DiscardCard, RemoveFromHandAndMana}
+import ru.bdm.mtg.Card
+import ru.bdm.mtg.actions._
 import ru.bdm.mtg.conditions.{Condition, Discard, IsPlayFromHandAndMana}
-import ru.bdm.mtg.{Card, State}
 
-class HandOfEmrakul extends Card  {
+case class HandOfEmrakul() extends Card {
   val cost: String = "CCCCCCCCC"
 
   override val description: Map[Condition, Action] = Map(

@@ -8,6 +8,9 @@ class NeuronAgent(log: Boolean = false) extends Agent {
 
   val ns = NeuronSystem(layer).setRandomWeights()
 
+
+  override def name: String = "neurons"
+
   override def chooseState(current: State, outcomes: Seq[State]): Int = {
     val outputs = outcomes.map(state => ns.work(InputCreate(state)).head)
     val max = outputs.zipWithIndex.max

@@ -1,15 +1,13 @@
 package ru.bdm.mtg.lands
 
-import ru.bdm.mtg.State
-import ru.bdm.mtg.AllSet._
-import ru.bdm.mtg.actions.{Action, AddDifferentColors, AddLand, AddMana, RemoveFromHand, Tap}
-import ru.bdm.mtg.conditions.{Condition, Discard, IsPlayFromHand, IsTappedLand, NoPlayedLand}
+import ru.bdm.mtg.actions._
+import ru.bdm.mtg.conditions._
 
-class Mountain(active: Boolean = true) extends Land(active) {
+case class Mountain(override val active: Boolean = true) extends Land(active) {
 
   override def copy(active: Boolean): Land = new Mountain(active)
 
-  override val description: Map[Condition, Action] = Map(
+  override def description: Map[Condition, Action] = Map(
     (IsPlayFromHand(this) and NoPlayedLand) -> AddLand(this) * RemoveFromHand(this),
     IsTappedLand(this) -> Tap(this) * AddMana("R"),
     Discard.standard(this)

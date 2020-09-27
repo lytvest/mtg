@@ -1,9 +1,8 @@
 package ru.bdm.mtg.cards
 
-import ru.bdm.mtg.AllSet.AllSetOps
-import ru.bdm.mtg.actions.{Action, AddGraveyard, Aura, DiscardCard, RemoveFromGraveyard, RemoveFromHandAndMana}
-import ru.bdm.mtg.conditions.{Condition, Discard, InGraveyard, IsPlay, IsPlayFromHandAndMana}
-import ru.bdm.mtg.{Card, State}
+import ru.bdm.mtg.Card
+import ru.bdm.mtg.actions._
+import ru.bdm.mtg.conditions._
 
 case class DragonBreath(target: Option[Card] = None) extends Card {
 

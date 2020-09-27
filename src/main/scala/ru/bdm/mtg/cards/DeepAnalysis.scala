@@ -4,7 +4,7 @@ import ru.bdm.mtg.Card
 import ru.bdm.mtg.actions.{Action, AddDiscard, AddGraveyard, DiscardCard, RemoveFromGraveyard, RemoveFromHandAndMana, RemoveMana, TakeCards}
 import ru.bdm.mtg.conditions.{CanPay, Condition, Discard, InGraveyard, IsPlay, IsPlayFromHandAndMana}
 
-class DeepAnalysis()extends Card {
+case class DeepAnalysis() extends Card {
    val cost = "CCCU"
   override val description: Map[Condition, Action] = Map(
     IsPlayFromHandAndMana(this, "CCCU") -> TakeCards(2) * RemoveFromHandAndMana(this, "CCCU") * AddGraveyard(this),

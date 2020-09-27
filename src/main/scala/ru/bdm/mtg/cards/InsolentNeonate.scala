@@ -4,7 +4,7 @@ import ru.bdm.mtg.Card
 import ru.bdm.mtg.actions.{Action, AddBattlefield, AddDiscard, AddGraveyard, DiscardCard, RemoveFromBattlefield, RemoveFromHandAndMana, TakeCards}
 import ru.bdm.mtg.conditions.{Condition, CountInHand, Discard, IsBattlefield, IsPlay, IsPlayFromHandAndMana}
 
-class InsolentNeonate extends Card{
+case class InsolentNeonate() extends Card{
   val cost = "R"
 
   override val description: Map[Condition, Action] = Map(

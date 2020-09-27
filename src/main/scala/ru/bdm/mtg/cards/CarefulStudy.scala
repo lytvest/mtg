@@ -5,7 +5,7 @@ import ru.bdm.mtg.AllSet._
 import ru.bdm.mtg.actions.{Action, AddDiscard, RemoveFromHandAndMana, TakeCards}
 import ru.bdm.mtg.conditions.{Condition, CountInHand, Discard, IsPlayFromHandAndMana}
 
-class CarefulStudy extends Card {
+case class CarefulStudy() extends Card {
   val cost: String = "U"
 
 

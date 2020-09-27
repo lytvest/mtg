@@ -5,7 +5,7 @@ import ru.bdm.mtg.AllSet._
 import ru.bdm.mtg.actions.{Action, AddBattlefield, AddGraveyard, DiscardCard, RemoveFromHandAndMana}
 import ru.bdm.mtg.conditions.{Condition, Discard, IsPlayFromHandAndMana}
 
-class UlamogsCrusher extends Card  {
+case class UlamogsCrusher() extends Card  {
   val cost: String = "CCCCCCCC"
 
   override val description: Map[Condition, Action] = Map(

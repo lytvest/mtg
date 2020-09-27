@@ -4,7 +4,7 @@ import ru.bdm.mtg.Card
 import ru.bdm.mtg.actions.{Action, Reanimation, RemoveFromHandAndMana}
 import ru.bdm.mtg.conditions.{Condition, Discard, IsPlayFromHandAndMana}
 
-class Exhume extends Card {
+case class Exhume() extends Card {
 
   override val description: Map[Condition, Action] = Map(
     IsPlayFromHandAndMana(this, "CB") -> Reanimation * RemoveFromHandAndMana(this, "CB"),

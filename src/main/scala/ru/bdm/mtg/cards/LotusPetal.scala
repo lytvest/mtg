@@ -4,7 +4,7 @@ import ru.bdm.mtg.Card
 import ru.bdm.mtg.actions.{Action, AddBattlefield, AddDifferentColors, RemoveFromBattlefield, RemoveFromHand}
 import ru.bdm.mtg.conditions.{Condition, Discard, InHand, IsBattlefield, IsPlay}
 
-class LotusPetal extends Card {
+case class LotusPetal() extends Card {
 
   override val description: Map[Condition, Action] = Map(
     (IsPlay and InHand(this)) -> RemoveFromHand(this) * AddBattlefield(this),

@@ -1,11 +1,9 @@
 package ru.bdm.mtg.lands
 
-import ru.bdm.mtg.State
-import ru.bdm.mtg.AllSet._
-import ru.bdm.mtg.actions.{Action, AddDifferentColors, AddLand, AddMana, RemoveFromHand, Tap}
-import ru.bdm.mtg.conditions.{Condition, Discard, InHand, Is, IsPlay, IsPlayFromHand, IsPlayFromHandAndMana, IsTappedLand, NoPlayedLand, Not}
+import ru.bdm.mtg.actions._
+import ru.bdm.mtg.conditions._
 
-class CrumblingVestige(active:Boolean = false) extends Land(active) {
+case class CrumblingVestige(override val active: Boolean = false) extends Land(active) {
 
 
   override val description: Map[Condition, Action] = Map(
