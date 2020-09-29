@@ -3,7 +3,7 @@ package ru.bdm.mtg.lands
 import ru.bdm.mtg.actions._
 import ru.bdm.mtg.conditions._
 
-case class SandstoneNeedle(act: Boolean = false, count: Int = 2) extends Land(act) {
+case class SandstoneNeedle(override val active: Boolean = false, count: Int = 2) extends Permanent(active) {
 
 
   override val description: Map[Condition, Action] = Map(
@@ -12,5 +12,5 @@ case class SandstoneNeedle(act: Boolean = false, count: Int = 2) extends Land(ac
     Discard.standard(this)
   )
 
-  override def copy(active: Boolean): Land = new SandstoneNeedle(active, count)
+  override def copy(active: Boolean): Permanent = new SandstoneNeedle(active, count)
 }

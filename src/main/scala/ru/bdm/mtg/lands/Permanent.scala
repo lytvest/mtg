@@ -1,17 +1,17 @@
 package ru.bdm.mtg.lands
 
-import ru.bdm.mtg.AllSet.AllSetOps
-import ru.bdm.mtg.{Card, State}
+import ru.bdm.mtg.Card
 
-abstract class Land(val active: Boolean = false) extends Card {
+abstract class Permanent(val active: Boolean = false) extends Card {
 
   override def equals(other: Any): Boolean = other match {
-    case that: Land =>
+    case that: Permanent =>
       super.equals(that) &&
         active == that.active
     case _ => false
   }
-  def copy(active:Boolean = this.active): Land
+
+  def copy(active: Boolean = this.active): Permanent
 
   override def toString: String = super.toString + "(" + active + ")"
 }

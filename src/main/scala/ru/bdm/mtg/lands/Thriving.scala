@@ -4,7 +4,7 @@ import ru.bdm.mtg.State
 import ru.bdm.mtg.actions._
 import ru.bdm.mtg.conditions._
 
-case class Thriving(meColor: Char, restColor: String, act: Boolean = false, choose: Option[Char] = None) extends Land(act) {
+case class Thriving(meColor: Char, restColor: String, override val active: Boolean = false, choose: Option[Char] = None) extends Permanent(active) {
 
   override lazy val description: Map[Condition, Action] = Map(
     (IsPlayFromHand(this) and NoPlayedLand) ->
@@ -17,7 +17,7 @@ case class Thriving(meColor: Char, restColor: String, act: Boolean = false, choo
     Discard.standard(this)
   )
 
-  override def copy(active: Boolean): Land = Thriving(meColor, restColor, active, choose)
+  override def copy(active: Boolean): Permanent = Thriving(meColor, restColor, active, choose)
 
   override def name: String = super.name + meColor + choose.getOrElse("")
 }

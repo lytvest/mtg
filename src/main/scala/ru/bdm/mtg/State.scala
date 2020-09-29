@@ -1,14 +1,14 @@
 package ru.bdm.mtg
 
-import ru.bdm.mtg.lands.Land
+import ru.bdm.mtg.lands.Permanent
 
 
 case class State(
-                  manaPool: ManaPool.Type = AllSet.empty[Char],
-                  hand: AllSet.Type[Card] = AllSet.empty[Card],
-                  graveyard: AllSet.Type[Card] = AllSet.empty[Card],
-                  battlefield: AllSet.Type[Card] = AllSet.empty[Card],
-                  lands: AllSet.Type[Land] = AllSet.empty[Land],
+                  manaPool: ManaPool.Type = AllSet.empty,
+                  hand: AllSet.card = AllSet.empty,
+                  graveyard: AllSet.card = AllSet.empty,
+                  battlefield: AllSet.permanent = AllSet.empty,
+                  lands: AllSet.permanent = AllSet.empty,
                   library: Seq[Card] = Seq.empty[Card],
                   верхКолоды: Seq[Card] = Seq.empty[Card],
                   phase: Phase.Phase = Phase.play,
@@ -70,8 +70,6 @@ case class State(
   }
 }
 
-object State {
 
-}
 
 

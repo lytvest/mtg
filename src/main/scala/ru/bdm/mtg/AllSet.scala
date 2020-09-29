@@ -1,10 +1,13 @@
 package ru.bdm.mtg
 
 import ru.bdm.mtg.ManaPool.ManaPool
+import ru.bdm.mtg.lands.Permanent
 
 object AllSet {
 
   type Type[T] = Map[T, Int]
+  type card = Type[Card]
+  type permanent = Type[Permanent]
 
 
   implicit class AllSetOps[T](val map: Map[T, Int]) {

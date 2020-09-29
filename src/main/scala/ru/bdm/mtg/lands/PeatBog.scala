@@ -3,7 +3,7 @@ package ru.bdm.mtg.lands
 import ru.bdm.mtg.actions._
 import ru.bdm.mtg.conditions._
 
-case class PeatBog(act: Boolean = false, count: Int = 2) extends Land(act) {
+case class PeatBog(override val active: Boolean = false, count: Int = 2) extends Permanent(active) {
 
   override val description: Map[Condition, Action] = Map(
     (IsPlayFromHand(this) and NoPlayedLand) -> AddLand(this) * RemoveFromHand(this),
@@ -11,7 +11,7 @@ case class PeatBog(act: Boolean = false, count: Int = 2) extends Land(act) {
     Discard.standard(this)
   )
 
-  override def copy(active: Boolean): Land = new PeatBog(active, count)
+  override def copy(active: Boolean): Permanent = new PeatBog(active, count)
 
   override def toString: String = super.toString + s"[$count]"
 }

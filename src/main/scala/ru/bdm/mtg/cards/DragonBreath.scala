@@ -7,8 +7,8 @@ import ru.bdm.mtg.conditions._
 case class DragonBreath(target: Option[Card] = None) extends Card {
 
   override val description: Map[Condition, Action] = Map(
-    IsPlayFromHandAndMana(this, "CR") -> Aura(target => DragonBreath(Some(target))) * RemoveFromHandAndMana(this, "CR"),
-    (IsPlay and InGraveyard(this)) -> Aura(target => DragonBreath(Some(target))) * RemoveFromGraveyard(this),
+    IsPlayFromHandAndMana(this, "CR") -> HasteChoose * RemoveFromHandAndMana(this, "CR"),
+    (IsPlay and InGraveyard(this)) -> HasteChoose * RemoveFromGraveyard(this),
     Discard(this) -> DiscardCard(this) * AddGraveyard(this)
   )
 

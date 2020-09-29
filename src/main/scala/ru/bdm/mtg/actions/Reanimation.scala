@@ -1,5 +1,6 @@
 package ru.bdm.mtg.actions
 import ru.bdm.mtg.AllSet.AllSetOps
+import ru.bdm.mtg.lands.Permanent
 import ru.bdm.mtg.{Card, State}
 
 object Reanimation extends Action {
@@ -20,7 +21,7 @@ object Reanimation extends Action {
 
   def exhume(current:State, choose:Card): State = {
     current.copy(
-      battlefield = current.battlefield +~ choose,
+      battlefield = current.battlefield +~ choose.asInstanceOf[Permanent],
       graveyard = current.graveyard -~ choose
     )
   }

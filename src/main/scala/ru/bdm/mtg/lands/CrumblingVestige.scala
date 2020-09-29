@@ -3,7 +3,7 @@ package ru.bdm.mtg.lands
 import ru.bdm.mtg.actions._
 import ru.bdm.mtg.conditions._
 
-case class CrumblingVestige(override val active: Boolean = false) extends Land(active) {
+case class CrumblingVestige(override val active: Boolean = false) extends Permanent(active) {
 
 
   override val description: Map[Condition, Action] = Map(
@@ -13,5 +13,5 @@ case class CrumblingVestige(override val active: Boolean = false) extends Land(a
   )
 
 
-  override def copy(active: Boolean): Land = new CrumblingVestige(active)
+  override def copy(active: Boolean): Permanent = new CrumblingVestige(active)
 }

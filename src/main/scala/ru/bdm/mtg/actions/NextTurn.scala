@@ -1,7 +1,7 @@
 package ru.bdm.mtg.actions
 import ru.bdm.mtg.AllSet.AllSetOps
 import ru.bdm.mtg.conditions.Discard
-import ru.bdm.mtg.lands.Land
+import ru.bdm.mtg.lands.Permanent
 import ru.bdm.mtg.{AllSet, Phase, State}
 
 object NextTurn extends Action {
@@ -13,7 +13,7 @@ object NextTurn extends Action {
       takeCards = 1,
       discard = state.endTurnDiscards + Math.max(0, drop),
       endTurnDiscards = 0,
-      lands = AllSet.empty[Land] ++~ state.lands.getSeq.map(_.copy(true)),
+      lands = AllSet.empty[Permanent] ++~ state.lands.getSeq.map(_.copy(true)),
       playedLand = false,
       phase = Phase.discardFirst
     ))
