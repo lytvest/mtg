@@ -17,7 +17,7 @@ class Battle(val deck: Seq[Card], player: Agent, lesson:Lesson = LessonEmpty, se
   var currentState: State = State(library = shuffler.shuffle(deck))
 
   def mall(): Unit = {
-    currentState = currentState.copy(takeCards = 7)
+    currentState = currentState.copy(draw = 7)
 
   }
 
@@ -32,7 +32,7 @@ class Battle(val deck: Seq[Card], player: Agent, lesson:Lesson = LessonEmpty, se
         discardAll()
       takeAll()
       discardAll()
-      currentState = currentState.copy(discard = 0, takeCards = 0)
+      currentState = currentState.copy(discard = 0, draw = 0)
 
       shuffleLibrary()
 
@@ -45,8 +45,8 @@ class Battle(val deck: Seq[Card], player: Agent, lesson:Lesson = LessonEmpty, se
   private def shuffleLibrary(): Unit = {
     if (currentState.shuffle)
       currentState = currentState.copy(
-        library = shuffler.shuffle(currentState.library ++ currentState.верхКолоды),
-        верхКолоды = Seq.empty[Card],
+        library = shuffler.shuffle(currentState.library ++ currentState.topOfLibrary),
+        topOfLibrary = Seq.empty[Card],
         shuffle = false
       )
   }
@@ -60,7 +60,7 @@ class Battle(val deck: Seq[Card], player: Agent, lesson:Lesson = LessonEmpty, se
   }
 
   private def takeAll(): Unit = {
-    while (currentState.takeCards > 0) {
+    while (currentState.draw > 0) {
       setPhase(Phase.take)
       val actives = getActiveActions
       if (actives.isEmpty)
@@ -86,12 +86,12 @@ class Battle(val deck: Seq[Card], player: Agent, lesson:Lesson = LessonEmpty, se
   }
 
   private def takeCards(): Unit = {
-    val lib = currentState.верхКолоды ++ currentState.library
+    val lib = currentState.topOfLibrary ++ currentState.library
     currentState = currentState.copy(
-      hand = currentState.hand ++~ lib.slice(0, currentState.takeCards),
-      верхКолоды = currentState.верхКолоды.drop(currentState.takeCards),
-      library = currentState.library.drop(Math.max(currentState.takeCards - currentState.верхКолоды.size, 0)),
-      takeCards = 0)
+      hand = currentState.hand ++~ lib.slice(0, currentState.draw),
+      topOfLibrary = currentState.topOfLibrary.drop(currentState.draw),
+      library = currentState.library.drop(Math.max(currentState.draw - currentState.topOfLibrary.size, 0)),
+      draw = 0)
   }
 
   private def getActiveActions: Seq[Action] = {

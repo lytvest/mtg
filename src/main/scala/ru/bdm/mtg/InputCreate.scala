@@ -82,7 +82,9 @@ object InputCreate {
       lands.map(land => state.lands.getOrElse(land, 0)) ++
       battlefield.map(per => state.battlefield.getOrElse(per, 0)) ++
       hand.map(card => state.hand.getOrElse(card, 0)) ++
-      graveyard.map(card => state.graveyard.getOrElse(card, 0))).map(_.toDouble)
+      graveyard.map(card => state.graveyard.getOrElse(card, 0))
+      ).map(_.toDouble) ++
+      Seq(state.discard, state.endTurnDiscards, state.draw, state.numberTurn, if (state.playedLand)  1 else 0)
   }
 
 }
