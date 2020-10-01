@@ -12,7 +12,7 @@ object TestState extends App {
 
 
   //val game = new Battle(DeckShuffler.allCard.getSeq, new ConsolePlayer, LessonEmpty)
-  val game = new Battle(DeckShuffler.allCard.getSeq, new NeuronAgent(log = true))
+  val game = new Battle(DeckShuffler.allCard.getSeq, new NeuronAgent(log = true), seed = 5)
   game.run()
   game.save()
 
