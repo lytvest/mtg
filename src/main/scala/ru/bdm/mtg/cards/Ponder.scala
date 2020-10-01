@@ -11,12 +11,12 @@ case class Ponder() extends Card {
     val комбинации = Seq(Seq(0, 1, 2), Seq(0, 2, 1), Seq(1, 0, 2), Seq(1, 2, 0), Seq(2, 0, 1), Seq(2, 1, 0))
 
     override def act(state: State): Seq[State] = {
-      val первыеТриКарты = (state.верхКолоды ++ state.library).slice(0, 3)
+      val первыеТриКарты = (state.topOfLibrary ++ state.library).slice(0, 3)
 
       комбинации.map(_.map(первыеТриКарты(_))).map { seq =>
         state.copy(
-          верхКолоды = seq ++ state.верхКолоды.drop(3),
-          library = state.library.drop(Math.max(3 - state.верхКолоды.size, 0)),
+          topOfLibrary = seq ++ state.topOfLibrary.drop(3),
+          library = state.library.drop(Math.max(3 - state.topOfLibrary.size, 0)),
         )
       } :+ state.copy(shuffle = true)
 

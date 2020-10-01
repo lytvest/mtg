@@ -10,7 +10,7 @@ object NextTurn extends Action {
     val seq = Seq(state.copy(
       manaPool = AllSet.empty[Char],
       numberTurn = state.numberTurn + 1,
-      takeCards = 1,
+      draw = 1,
       discard = state.endTurnDiscards + Math.max(0, drop),
       endTurnDiscards = 0,
       lands = AllSet.empty[Permanent] ++~ state.lands.getSeq.map(_.copy(true)),

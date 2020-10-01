@@ -78,11 +78,13 @@ object InputCreate {
 
 
   def apply(state: State): Seq[Double] = {
-    (mana.map(count => state.manaPool.getOrElse(count, 0)) ++
-      lands.map(land => state.lands.getOrElse(land, 0)) ++
-      battlefield.map(per => state.battlefield.getOrElse(per, 0)) ++
-      hand.map(card => state.hand.getOrElse(card, 0)) ++
-      graveyard.map(card => state.graveyard.getOrElse(card, 0))).map(_.toDouble)
+    (mana.map(count => state.manaPool.getOrElse(count, 0) / 10) ++
+      lands.map(land => state.lands.getOrElse(land, 0) / 4) ++
+      battlefield.map(per => state.battlefield.getOrElse(per, 0) / 4) ++
+      hand.map(card => state.hand.getOrElse(card, 0) / 4) ++
+      graveyard.map(card => state.graveyard.getOrElse(card, 0) / 4) ++
+      Seq(state.discard / 7, state.endTurnDiscards / 3, state.draw / 7, state.numberTurn / 10, if (state.playedLand)  1 else 0)
+      ).map(_ - 0.5)
   }
 
 }

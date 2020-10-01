@@ -10,9 +10,9 @@ case class State(
                   battlefield: AllSet.permanent = AllSet.empty,
                   lands: AllSet.permanent = AllSet.empty,
                   library: Seq[Card] = Seq.empty[Card],
-                  верхКолоды: Seq[Card] = Seq.empty[Card],
+                  topOfLibrary: Seq[Card] = Seq.empty[Card],
                   phase: Phase.Phase = Phase.play,
-                  takeCards: Int = 0,
+                  draw: Int = 0,
                   discard: Int = 0,
                   numberTurn: Int = 1,
                   endTurnDiscards: Int = 0,
@@ -24,13 +24,13 @@ case class State(
       s"   turn=$numberTurn" +
       s"   hand{${hand.mkString(", ")}}" +
       s"   lands{${lands.mkString(", ")}}" +
-      s"   takeCards=$takeCards" +
+      s"   takeCards=$draw" +
       s"   discard=$discard" +
       s"   playedLand=$playedLand" +
       s"   shuffle=$shuffle" +
       s"   graveyard{${graveyard.mkString(", ")}}" +
       s"   battlefield{${battlefield.mkString(", ")}}" +
-      s"   верхКолоды{${верхКолоды.mkString(", ")}}" +
+      s"   верхКолоды{${topOfLibrary.mkString(", ")}}" +
       s"   library{${library.size}}"
 
 
@@ -42,9 +42,9 @@ case class State(
       changes(battlefield, next.battlefield),
       changes(lands, next.lands),
       next.library,
-      next.верхКолоды,
+      next.topOfLibrary,
       next.phase,
-      next.takeCards,
+      next.draw,
       next.discard,
       next.numberTurn,
       next.endTurnDiscards,
