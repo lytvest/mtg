@@ -4,7 +4,7 @@ import ru.bdm.mtg.Card
 import ru.bdm.mtg.actions._
 import ru.bdm.mtg.conditions._
 
-case class DragonBreath(target: Option[Card] = None) extends Card {
+case class DragonBreath() extends Card {
 
   override val description: Map[Condition, Action] = Map(
     IsPlayFromHandAndMana(this, "CR") -> HasteChoose * RemoveFromHandAndMana(this, "CR"),
@@ -12,5 +12,4 @@ case class DragonBreath(target: Option[Card] = None) extends Card {
     Discard(this) -> DiscardCard(this) * AddGraveyard(this)
   )
 
-  override def toString: String = super.toString + s"[${target.getOrElse("")}]"
 }

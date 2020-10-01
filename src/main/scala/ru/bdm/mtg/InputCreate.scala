@@ -6,63 +6,83 @@ import ru.bdm.mtg.lands._
 
 object InputCreate {
 
-  private var cards: Seq[Any] = Seq(true, false).flatMap(bool =>
-    Seq(
-      new CrumblingVestige(bool),
-      new Mountain(bool),
-      new PeatBog(bool)
-    )
-  )
 
-  cards ++= (for {
+  val mana = "WURBC"
+
+  val landsActive: Seq[Permanent] = Seq(
+    CrumblingVestige(true),
+    Mountain(true),
+    PeatBog(active = true)
+  ) ++ (for {
     color <- "RWUB"
     rest = "RWUB".filter(_ != color)
     choose <- rest.map(Some(_)) :+ None
-    active <- Seq(true, false)
-  } yield new Thriving(color, rest, active, choose))
+  } yield Thriving(color, rest, active = true, choose))
 
-  cards ++= (for {
-    active <- Seq(true, false)
-    count <- 0 to 2
-  } yield new SandstoneNeedle(active, count))
+  val landsPassive: Seq[Permanent] = landsActive.map(_.copy(false))
 
-  cards ++= Seq(
-    new BreathOfLife,
-    new CarefulStudy,
-    new CatharticReunion,
-    new DangerousWager,
-    new DarkRitual,
-    new DeepAnalysis,
-    new Duress,
-    new Exhume,
-    new FaithlessLooting,
-    new HandOfEmrakul,
-    new IdeasUnbound,
-    new InsolentNeonate,
-    new LotusPetal,
-    new Manamorphose,
-    MerchantOfTheVale(),
-    MerchantOfTheVale(true),
-    new Ponder,
-    new RiseAgain,
-    new SimianSpiritGuide,
-    new ThrillOfPossibility,
-    new TolarianWinds,
-    new UlamogsCrusher
+  val battlefieldActive: Seq[Permanent] = Seq(
+    HandOfEmrakul(true),
+    InsolentNeonate(true),
+    LotusPetal(),
+    MerchantOfTheVale(active = true),
+    MerchantOfTheVale(exile = true, active = true),
+    UlamogsCrusher(true)
   )
-  cards ++= "WURBG"
+  val battlefieldPassive: Seq[Permanent] = battlefieldActive.map(_.copy(false))
 
-  val values: Map[Any, Double] = cards.zipWithIndex.map{ case (card, index) =>
-    (card, (index.toDouble - cards.size / 2 - (if (index <= cards.size / 2) 1 else 0)) / 10d)
-  }.toMap
-  println(values.toSeq.sortBy(_._2).mkString("\n"))
+  val hand: Seq[Card] = Seq(
+    BreathOfLife(),
+    CarefulStudy(),
+    CatharticReunion(),
+    DangerousWager(),
+    DarkRitual(),
+    DeepAnalysis(),
+    Duress(),
+    Exhume(),
+    FaithlessLooting(),
+    HandOfEmrakul(),
+    IdeasUnbound(),
+    InsolentNeonate(),
+    LotusPetal(),
+    Manamorphose(),
+    MerchantOfTheVale(),
+    Ponder(),
+    RiseAgain(),
+    SimianSpiritGuide(),
+    ThrillOfPossibility(),
+    TolarianWinds(),
+    UlamogsCrusher(),
+
+    CrumblingVestige(),
+    Mountain(),
+    PeatBog(),
+    SandstoneNeedle(),
+    ThrivingBluff(),
+    ThrivingIsle(),
+    ThrivingMoor()
+  )
+
+  val graveyard:Seq[Card] = Seq(
+    DeepAnalysis(),
+    DragonBreath(),
+    FaithlessLooting(),
+    HandOfEmrakul(),
+    InsolentNeonate(),
+    UlamogsCrusher()
+  )
+
+  val lands: Seq[Permanent] = landsActive ++ landsPassive
+  val battlefield: Seq[Permanent] = battlefieldActive ++ battlefieldPassive
+
 
 
   def apply(state: State): Seq[Double] = {
-    state.hand.getSeq.map(values.getOrElse(_, 0d)) ++
-    state.battlefield.getSeq.map(values.getOrElse(_, 0d)) ++
-    state.graveyard.getSeq.map(values.getOrElse(_, 0d)) ++
-    state.manaPool.getSeq.map(values.getOrElse(_, 0d))
+    (mana.map(count => state.manaPool.getOrElse(count, 0)) ++
+      lands.map(land => state.lands.getOrElse(land, 0)) ++
+      battlefield.map(per => state.battlefield.getOrElse(per, 0)) ++
+      hand.map(card => state.hand.getOrElse(card, 0)) ++
+      graveyard.map(card => state.graveyard.getOrElse(card, 0))).map(_.toDouble)
   }
 
 }

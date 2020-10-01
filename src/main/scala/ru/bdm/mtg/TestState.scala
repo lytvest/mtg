@@ -11,8 +11,8 @@ object TestState extends App {
 //  println(AddDifferentColors("WWUUBBRR", 2) * RemoveMana("CU") act(state) mkString("\n"))
 
 
-  val game = new Battle(DeckShuffler.allCard.getSeq, new ConsolePlayer, LessonEmpty)
-  //val game = new Battle(DeckShuffler.allCard.getSeq, new NeuronAgent(log = false))
+  //val game = new Battle(DeckShuffler.allCard.getSeq, new ConsolePlayer, LessonEmpty)
+  val game = new Battle(DeckShuffler.allCard.getSeq, new NeuronAgent(log = true))
   game.run()
   game.save()
 

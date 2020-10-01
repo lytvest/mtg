@@ -11,7 +11,7 @@ import ru.bdm.mtg.actions.{Action, NextTurn}
 import ru.bdm.mtg.cards.{BreathOfLife, CarefulStudy, CatharticReunion, DangerousWager, DarkRitual, DeepAnalysis, Duress, Exhume, FaithlessLooting, HandOfEmrakul, IdeasUnbound, InsolentNeonate, LotusPetal, Manamorphose, MerchantOfTheVale, Ponder, RiseAgain, SimianSpiritGuide, ThrillOfPossibility, TolarianWinds, UlamogsCrusher}
 import ru.bdm.mtg.lands.{CrumblingVestige, Mountain, PeatBog, SandstoneNeedle, Thriving}
 
-class Battle(val deck: Seq[Card], player: Agent, lesson:Lesson, seed: Long = System.currentTimeMillis()) {
+class Battle(val deck: Seq[Card], player: Agent, lesson:Lesson = LessonEmpty, seed: Long = System.currentTimeMillis()) {
   private val shuffler = new DeckShuffler(seed)
 
   var currentState: State = State(library = shuffler.shuffle(deck))

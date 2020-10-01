@@ -7,9 +7,9 @@ import ru.bdm.mtg.lands.Permanent
 case class HandOfEmrakul(override val active: Boolean = false) extends Permanent(active) {
   val cost: String = "CCCCCCCCC"
 
-  override val description: Map[Condition, Action] = Map(
+  override lazy val description: Map[Condition, Action] = Map(
     IsPlayFromHandAndMana(this, cost) -> RemoveFromHandAndMana(this, cost) * AddBattlefield(this),
-    Discard(this) -> DiscardCard(this) * AddGraveyard(this)
+    Discard(this) -> DiscardCard(this) * AddGraveyard(this.copy(false))
   )
 
   override def copy(active: Boolean): Permanent = HandOfEmrakul(active)
