@@ -12,8 +12,22 @@ object TestState extends App {
 
 
   //val game = new Battle(DeckShuffler.allCard.getSeq, new ConsolePlayer, LessonEmpty)
-  val game = new Battle(DeckShuffler.allCard.getSeq, new NeuronAgent(log = true), seed = 5)
-  game.run()
-  game.save()
+  var max = 0d
+  var iter = 0
+  while (true) {
+    iter += 1
+    val agent = new NeuronAgent(log = false, teacher = true, "saves/ns/n2.json")
+   // val agent = new NeuronAgent(log = false, teacher = true)
+    val game = new Battle(DeckShuffler.allCard.getSeq, agent)
+    game.run()
+    // game.save()
+    agent.save("saves/ns/n2.json")
+    val cur = agent.countRight.toDouble / (agent.countRight + agent.countNoRight)
+    if (cur > max){
+      max = cur
+      agent.save("saves/ns/best.json")
+    }
+    println(s"$iter) -> rights = ${agent.countRight} no rights = ${agent.countNoRight} ${(cur * 100).toInt}% max = ${(max * 10000).toInt / 100d}%")
+  }
 
 }

@@ -8,7 +8,7 @@ import org.json4s._
 import org.json4s.native.Serialization
 import ru.bdm.mtg.AllSet.AllSetOps
 import ru.bdm.mtg.actions.{Action, NextTurn}
-import ru.bdm.mtg.cards.{BreathOfLife, CarefulStudy, CatharticReunion, DangerousWager, DarkRitual, DeepAnalysis, Duress, Exhume, FaithlessLooting, HandOfEmrakul, IdeasUnbound, InsolentNeonate, LotusPetal, Manamorphose, MerchantOfTheVale, Ponder, RiseAgain, SimianSpiritGuide, ThrillOfPossibility, TolarianWinds, UlamogsCrusher}
+import ru.bdm.mtg.cards.{BreathOfLife, CarefulStudy, CatharticReunion, DangerousWager, DarkRitual, DeepAnalysis, DragonBreath, Duress, Exhume, FaithlessLooting, HandOfEmrakul, IdeasUnbound, InsolentNeonate, LotusPetal, Manamorphose, MerchantOfTheVale, Ponder, RiseAgain, SimianSpiritGuide, ThrillOfPossibility, TolarianWinds, UlamogsCrusher}
 import ru.bdm.mtg.lands.{CrumblingVestige, Mountain, PeatBog, SandstoneNeedle, Thriving}
 
 class Battle(val deck: Seq[Card], player: Agent, lesson:Lesson = LessonEmpty, seed: Long = System.currentTimeMillis()) {
@@ -106,10 +106,10 @@ class Battle(val deck: Seq[Card], player: Agent, lesson:Lesson = LessonEmpty, se
 
   def save(fileName: String = ""): Unit = {
     implicit val formats = Serialization.formats(Battle.formats)
-    val files = new File("").listFiles
-    val count = if(files != null) files.count(_.getName.endsWith(".js")) + 1 else 1
-    val name = if (fileName.isEmpty) player.name + "_" + count + ".js" else fileName
-    Serialization.write(BattleWrite(seed, deck, player.list), new PrintWriter(name,  Charset.forName("UTF-8"))).close()
+    val files = new File("saves/").listFiles
+    val count = if(files != null) files.count(_.getName.endsWith(".json")) + 1 else 1
+    val name = if (fileName.isEmpty) player.name + "_" + count + ".json" else fileName
+    Serialization.write(BattleWrite(seed, deck, player.list), new PrintWriter("saves/" + name,  Charset.forName("UTF-8"))).close()
   }
 
 }
@@ -129,6 +129,7 @@ object Battle {
     classOf[DangerousWager],
     classOf[DarkRitual],
     classOf[DeepAnalysis],
+    classOf[DragonBreath],
     classOf[Duress],
     classOf[Exhume],
     classOf[FaithlessLooting],
