@@ -1,5 +1,7 @@
 package ru.bdm.mtg
 
+import ru.bdm.mtg.ConsolePlayer.readInt
+
 import scala.io.StdIn
 
 class ConsolePlayer extends Agent {
@@ -10,6 +12,9 @@ class ConsolePlayer extends Agent {
     readInt(outcomes.length)
   }
 
+}
+
+object ConsolePlayer {
   def readInt(len: Int): Int = {
     try {
       print("--->")
@@ -31,6 +36,4 @@ class ConsolePlayer extends Agent {
 
     }
   }
-
-
 }

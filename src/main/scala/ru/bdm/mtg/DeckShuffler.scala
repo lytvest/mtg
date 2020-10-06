@@ -2,7 +2,7 @@ package ru.bdm.mtg
 
 import ru.bdm.mtg.AllSet.AllSetOps
 import ru.bdm.mtg.cards._
-import ru.bdm.mtg.lands.{CrumblingVestige, Mountain, ThrivingBluff}
+import ru.bdm.mtg.lands._
 
 import scala.util.Random
 
@@ -11,6 +11,7 @@ case class DeckShuffler(seed:Long) {
   val random = new Random(seed)
 
   def shuffle(desk: Seq[Card]): Seq[Card] = {
+
     val array = Array.fill[Card](desk.length)(null)
     var i = 0
     desk.filter{ card =>
@@ -31,36 +32,34 @@ case class DeckShuffler(seed:Long) {
 object DeckShuffler {
   val allCard: AllSet.Type[Card] = AllSet.empty[Card] ++~ Seq(
     CrumblingVestige() * 4,
-    new Mountain() * 4,
-    new LotusPetal * 8,
-    //new PeatBog() * 4,
-    //new SandstoneNeedle() * 4,
-    //ThrivingBluff() * 4,
-  //  ThrivingIsle() * 4,
-  //  ThrivingMoor() * 4,
-    //5
-    // new BreathOfLife * 4,
-  //  new CarefulStudy * 4,
-//    new CatharticReunion * 4,
-//    new Ponder * 4,
-//    new MerchantOfTheVale * 4,
-    //new DangerousWager * 4,
-    //new DarkRitual * 4,
-    //new Duress * 4,
-    new Exhume * 4,
-    //new FaithlessLooting() * 4,
-    new HandOfEmrakul * 2,
-    //new Manamorphose * 4,
-    //new RiseAgain * 4,
-    //new SimianSpiritGuide * 4,
-    //new ThrillOfPossibility * 4,
-    new InsolentNeonate * 4,
-   // new IdeasUnbound * 4,
-    //new TolarianWinds * 4,
-  //  new DeepAnalysis * 4,
-    //new TolarianWinds * 4,
-  //  new DragonBreath * 4,
-    //new UlamogsCrusher * 4
+    Mountain() * 4,
+    LotusPetal() * 8,
+    SandstoneNeedle() * 4,
+    ThrivingBluff() * 4,
+    ThrivingIsle() * 4,
+    ThrivingMoor() * 4,
+    BreathOfLife() * 4,
+    CarefulStudy() * 4,
+    CatharticReunion() * 4,
+    Ponder() * 4,
+    MerchantOfTheVale() * 4,
+    DangerousWager() * 4,
+    DarkRitual() * 4,
+    Duress() * 4,
+    Exhume() * 4,
+    FaithlessLooting() * 4,
+    HandOfEmrakul() * 2,
+    Manamorphose() * 4,
+    RiseAgain() * 4,
+    SimianSpiritGuide() * 4,
+    ThrillOfPossibility() * 4,
+    InsolentNeonate() * 4,
+    IdeasUnbound() * 4,
+    TolarianWinds() * 4,
+    DeepAnalysis() * 4,
+    TolarianWinds() * 4,
+    DragonBreath() * 4,
+    UlamogsCrusher() * 4
   ).flatten
 
 }
