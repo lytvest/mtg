@@ -16,33 +16,37 @@ class Battle(val deck: Seq[Card], player: Agent, lesson:Lesson = LessonEmpty, se
 
   var currentState: State = State(library = shuffler.shuffle(deck))
 
-  def mall(): Unit = {
+  def mulligan(): Unit = {
     currentState = currentState.copy(draw = 7)
-
   }
 
 
+  def runWholeGame(): Unit = {
+    mulligan()
+    while (!tick()) {
+    }
+  }
 
-  def run(): Unit = {
-    mall()
-    while (lesson.isEnd(currentState)) {
+  def tick(): Boolean = {
+    if(!lesson.isEnd(currentState)) {
       if (currentState.phase == Phase.takeFirst)
-        takeAll()
+        applyDraws()
       if (currentState.phase == Phase.discardFirst)
-        discardAll()
-      takeAll()
-      discardAll()
+        applyDiscards()
+      applyDraws()
+      applyDiscards()
       currentState = currentState.copy(discard = 0, draw = 0)
+      applyShuffleLibrary()
 
-      shuffleLibrary()
 
       setPhase(Phase.play)
       val actives = getActiveActions :+ NextTurn
       choosePlayerState(actives)
     }
+    return lesson.isEnd(currentState)
   }
 
-  private def shuffleLibrary(): Unit = {
+  private def applyShuffleLibrary(): Unit = {
     if (currentState.shuffle)
       currentState = currentState.copy(
         library = shuffler.shuffle(currentState.library ++ currentState.topOfLibrary),
@@ -51,7 +55,7 @@ class Battle(val deck: Seq[Card], player: Agent, lesson:Lesson = LessonEmpty, se
       )
   }
 
-  private def discardAll(): Unit = {
+  private def applyDiscards(): Unit = {
     while (currentState.discard > 0 && currentState.hand.nonEmpty) {
       setPhase(Phase.discard)
       val actives = getActiveActions
@@ -59,7 +63,7 @@ class Battle(val deck: Seq[Card], player: Agent, lesson:Lesson = LessonEmpty, se
     }
   }
 
-  private def takeAll(): Unit = {
+  private def applyDraws(): Unit = {
     while (currentState.draw > 0) {
       setPhase(Phase.take)
       val actives = getActiveActions

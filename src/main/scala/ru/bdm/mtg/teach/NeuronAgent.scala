@@ -17,19 +17,24 @@ class NeuronAgent(log: Boolean = false) extends Agent {
 
   override def name: String = "neurons"
 
+
+
   override def chooseState(current: State, outcomes: Seq[State]): Int = {
 
     val outputs = outcomes.map(state => ns.work(InputCreate(state)).head)
     val max = outputs.zipWithIndex.max
 
+    printInfo(current, outcomes, max._2, outputs)
+    max._2
+  }
+
+  def printInfo(current: State, outcomes: Seq[State], chosen: Int, outputs: Seq[Double]): Unit ={
     if (log) {
 
       println("Текущее состояние:\n" + current + "\n")
       print(outcomes.zipWithIndex.map { case (f, s) => (s, current.getChanges(f)) }.mkString("Возможные состояния:\n", "\n", "\nВыборано --> "))
-      println(max._2)
+      println(chosen)
       println(outputs)
     }
-
-    max._2
   }
 }

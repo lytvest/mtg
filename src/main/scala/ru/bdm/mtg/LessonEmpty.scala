@@ -6,5 +6,5 @@ object LessonEmpty extends Lesson {
     eval += 1
   }
 
-  override def оценка: Double = eval
+  override def lessonEvaluation: Double = eval
 }
