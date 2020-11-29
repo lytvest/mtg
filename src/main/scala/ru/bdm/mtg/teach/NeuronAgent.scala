@@ -3,17 +3,11 @@ package ru.bdm.mtg.teach
 import ru.bdm.mtg.{Agent, InputCreate, State}
 import ru.bdm.neurons.{BackpropagationAlgorithm, Layer, NeuronSystem}
 
-class NeuronAgent(log: Boolean = false, teacher: Boolean = false, fileName: String = "", inpustLog: Boolean = false) extends Agent {
+import scala.util.Random
 
+class NeuronAgent(ns: NeuronSystem, log: Boolean = false, teacher: Boolean = false, fileName: String = "", inpustLog: Boolean = false) extends Agent {
 
-  val ns = if (fileName == "") {
-    val layer = Layer(94) * Layer(20) * Layer(10) * Layer(5) * Layer(1)
-    NeuronSystem(layer).setRandomWeights()
-  } else {
-    NeuronSystem.readFromFile(fileName)
-  }
-
-  val speed = 0.7
+  val speed = 0.00005
   val alg = new BackpropagationAlgorithm(ns, moment = 0.1)
   var countRight = 0
   var countNoRight = 0
@@ -27,23 +21,29 @@ class NeuronAgent(log: Boolean = false, teacher: Boolean = false, fileName: Stri
 
   override def name: String = "neurons"
 
-  override def chooseState(current: State, outcomes: Seq[State]): Int = {
+  def softMax(values: Seq[Double]): Int ={
+    val max = values.max
+    var allMax = List[Int]()
 
-    val outputs = outcomes.map(state => ns.work(InputCreate(state)).head)
-    val max = outputs.zipWithIndex.max
-
-    if (log) {
-
-      println("Текущее состояние:\n" + current + "\n")
-      print(outcomes.zipWithIndex.map { case (state, index) =>
-        s"$index ${current.getChanges(state)}" + (if (inpustLog) s"\n             -inputs-    ${InputCreate(state)}" else "")
-      }.mkString("Возможные состояния:\n", "\n", "\nВыборано --> "))
-      println(max._2)
-      println(outputs)
+    for(index <- values.indices) {
+      if(values(index) == max)
+        allMax ::= index
     }
-    if (teacher) {
+    allMax(Random.nextInt(allMax.size))
+  }
+
+  def printLog(current: State, outcomes: Seq[State], chosen: Int, outputs: Seq[Double]): Unit ={
+    println("Текущее состояние:\n" + current + "\n")
+    print(outcomes.zipWithIndex.map { case (state, index) =>
+      s"$index ${current.getChanges(state)}" + (if (inpustLog) s"\n             -inputs-    ${InputCreate(state)}" else "")
+    }.mkString("Возможные состояния:\n", "\n", "\nВыборано --> "))
+    println(chosen)
+    println(outputs)
+  }
+
+  def teach(chosen: Int, outputs: Seq[Double], outcomes: Seq[State]): Int ={
       val answer = outputs.size - 1 //ConsolePlayer.readInt(outputs.size)
-      if (answer == max._2)
+      if (answer == chosen)
         countRight += 1
       else
         countNoRight += 1
@@ -56,9 +56,19 @@ class NeuronAgent(log: Boolean = false, teacher: Boolean = false, fileName: Stri
           alg.teachOne(InputCreate(state), Seq(0d))
         }
       }
-      answer
+    answer
+  }
+
+  override def chooseState(current: State, outcomes: Seq[State]): Int = {
+
+    val outputs = outcomes.map(state => ns.work(InputCreate(state)).head)
+    val chosen = softMax(outputs)
+
+    if (log) printLog(current, outcomes, chosen, outputs)
+    if(teacher){
+      teach(chosen,outputs, outcomes)
     } else {
-      max._2
+      chosen
     }
   }
 
