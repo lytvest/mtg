@@ -11,7 +11,7 @@ import ru.bdm.mtg.actions.{Action, NextTurn}
 import ru.bdm.mtg.cards.{BreathOfLife, CarefulStudy, CatharticReunion, DangerousWager, DarkRitual, DeepAnalysis, DragonBreath, Duress, Exhume, FaithlessLooting, HandOfEmrakul, IdeasUnbound, InsolentNeonate, LotusPetal, Manamorphose, MerchantOfTheVale, Ponder, RiseAgain, SimianSpiritGuide, ThrillOfPossibility, TolarianWinds, UlamogsCrusher}
 import ru.bdm.mtg.lands.{CrumblingVestige, Mountain, PeatBog, SandstoneNeedle, Thriving}
 
-class Battle(val deck: Seq[Card], player: Agent, val lesson:Lesson = LessonEmpty, seed: Long = System.currentTimeMillis()) {
+class Battle(val deck: Seq[Card], agent: Agent, seed: Long = System.currentTimeMillis()) {
   private val shuffler = new DeckShuffler(seed)
 
   var currentState: State = State(library = shuffler.shuffle(deck))
@@ -23,27 +23,27 @@ class Battle(val deck: Seq[Card], player: Agent, val lesson:Lesson = LessonEmpty
 
   def run(): Unit = {
     mulligan()
-    while (!tick()) {
-    }
+    while (!agent.isEnd(currentState))
+      tick()
+    agent.endGame()
   }
 
-  def tick(): Boolean = {
-    if(!lesson.isEnd(currentState)) {
-      if (currentState.phase == Phase.takeFirst)
-        applyDraws()
-      if (currentState.phase == Phase.discardFirst)
-        applyDiscards()
+  def tick(): Unit = {
+
+    if (currentState.phase == Phase.takeFirst)
       applyDraws()
+    if (currentState.phase == Phase.discardFirst)
       applyDiscards()
-      currentState = currentState.copy(discard = 0, draw = 0)
-      applyShuffleLibrary()
+    applyDraws()
+    applyDiscards()
+    currentState = currentState.copy(discard = 0, draw = 0)
+    applyShuffleLibrary()
 
 
-      setPhase(Phase.play)
-      val actives = getActiveActions :+ NextTurn
-      choosePlayerState(actives)
-    }
-    lesson.isEnd(currentState)
+    setPhase(Phase.play)
+    val actives = getActiveActions :+ NextTurn
+    choosePlayerState(actives)
+
   }
 
   private def applyShuffleLibrary(): Unit = {
@@ -82,10 +82,9 @@ class Battle(val deck: Seq[Card], player: Agent, val lesson:Lesson = LessonEmpty
   private def choosePlayerState(actives: Seq[Action]): Unit = {
     val choose = actives.flatMap(_.act(currentState)).distinct
     if (choose.nonEmpty) {
-      val index = player.chooseStateServer(currentState, choose)
+      val index = agent.chooseStateServer(currentState, choose)
       val oldState = currentState
       currentState = choose(index)
-      lesson.evaluate(oldState, currentState)
     }
   }
 
@@ -111,9 +110,9 @@ class Battle(val deck: Seq[Card], player: Agent, val lesson:Lesson = LessonEmpty
   def save(fileName: String = ""): Unit = {
     implicit val formats = Serialization.formats(Battle.formats)
     val files = new File("saves/").listFiles
-    val count = if(files != null) files.count(_.getName.endsWith(".json")) + 1 else 1
-    val name = if (fileName.isEmpty) player.name + "_" + count + ".json" else fileName
-    Serialization.write(BattleWrite(seed, deck, player.list), new PrintWriter("saves/" + name,  Charset.forName("UTF-8"))).close()
+    val count = if (files != null) files.count(_.getName.endsWith(".json")) + 1 else 1
+    val name = if (fileName.isEmpty) agent.name + "_" + count + ".json" else fileName
+    Serialization.write(BattleWrite(seed, deck, agent.list), new PrintWriter("saves/" + name, Charset.forName("UTF-8"))).close()
   }
 
 }

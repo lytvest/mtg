@@ -9,10 +9,6 @@ class EGreedyNeuronAgent(ns: NeuronSystem, log: Boolean = false, e: Double = 0.1
   override def chooseState(current: State, outcomes: Seq[State]): Int = {
 
     val outputs = outcomes.map(state => ns.work(InputCreate(state)).head)
-    val max = outputs.zipWithIndex.max
-    var chosen = rand.nextInt(outcomes.size)
-    if(rand.nextDouble() > e)
-      chosen = max._2
-    chosen
+    EGreedy(outputs, e)
   }
 }

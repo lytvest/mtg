@@ -30,7 +30,7 @@ case class State(
       s"   shuffle=$shuffle" +
       s"   graveyard{${graveyard.mkString(", ")}}" +
       s"   battlefield{${battlefield.mkString(", ")}}" +
-      s"   верхКолоды{${topOfLibrary.mkString(", ")}}" +
+      s"   topDeck{${topOfLibrary.mkString(", ")}}" +
       s"   library{${library.size}}"
 
 
