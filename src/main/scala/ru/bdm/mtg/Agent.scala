@@ -1,6 +1,6 @@
 package ru.bdm.mtg
 
-trait Agent extends Lesson {
+trait Agent {
 
   def name:String = "empty"
 
@@ -9,7 +9,8 @@ trait Agent extends Lesson {
 
   def chooseStateServer(current: State, outcomes:Seq[State]): Int = {
     val next = chooseState(current, outcomes)
-    score += evaluate(current, outcomes(next))
+    println(outcomes(next))
+    score += outcomes(next).score
     nextCourse(current, outcomes(next))
     list ::= next
     next

@@ -11,7 +11,7 @@ import ru.bdm.mtg.actions.{Action, NextTurn}
 import ru.bdm.mtg.cards.{BreathOfLife, CarefulStudy, CatharticReunion, DangerousWager, DarkRitual, DeepAnalysis, DragonBreath, Duress, Exhume, FaithlessLooting, HandOfEmrakul, IdeasUnbound, InsolentNeonate, LotusPetal, Manamorphose, MerchantOfTheVale, Ponder, RiseAgain, SimianSpiritGuide, ThrillOfPossibility, TolarianWinds, UlamogsCrusher}
 import ru.bdm.mtg.lands.{CrumblingVestige, Mountain, PeatBog, SandstoneNeedle, Thriving}
 
-class Battle(val deck: Seq[Card], agent: Agent, seed: Long = System.currentTimeMillis()) {
+class Battle(val deck: Seq[Card], agent: Agent, val lesson: Lesson = Lesson.empty , seed: Long = System.currentTimeMillis()) {
   private val shuffler = new DeckShuffler(seed)
 
   var currentState: State = State(library = shuffler.shuffle(deck))
@@ -23,7 +23,7 @@ class Battle(val deck: Seq[Card], agent: Agent, seed: Long = System.currentTimeM
 
   def run(): Unit = {
     mulligan()
-    while (!agent.isEnd(currentState))
+    while (!lesson.isEnd(currentState))
       tick()
     agent.endGame()
   }
@@ -80,10 +80,9 @@ class Battle(val deck: Seq[Card], agent: Agent, seed: Long = System.currentTimeM
   }
 
   private def choosePlayerState(actives: Seq[Action]): Unit = {
-    val choose = actives.flatMap(_.act(currentState)).distinct
+    val choose = actives.flatMap(_.act(currentState)).distinct.map(state => state.copy(score = lesson.evaluate(currentState, state)))
     if (choose.nonEmpty) {
       val index = agent.chooseStateServer(currentState, choose)
-      val oldState = currentState
       currentState = choose(index)
     }
   }
