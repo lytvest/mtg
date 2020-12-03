@@ -14,9 +14,10 @@ import ru.bdm.mtg.lands.{CrumblingVestige, Mountain, PeatBog, SandstoneNeedle, T
 class Battle(val deck: Seq[Card], agent: Agent, val lesson: Lesson = Lesson.empty , seed: Long = System.currentTimeMillis()) {
   private val shuffler = new DeckShuffler(seed)
 
-  var currentState: State = State(library = shuffler.shuffle(deck))
+  var currentState: State = State()
 
   def mulligan(): Unit = {
+    currentState = State(library = shuffler.shuffle(deck))
     currentState = currentState.copy(draw = 7)
   }
 

@@ -9,7 +9,6 @@ trait Agent {
 
   def chooseStateServer(current: State, outcomes:Seq[State]): Int = {
     val next = chooseState(current, outcomes)
-    println(outcomes(next))
     score += outcomes(next).score
     nextCourse(current, outcomes(next))
     list ::= next
@@ -20,5 +19,9 @@ trait Agent {
   def nextCourse(current: State, nextState:State): Unit = {}
 
   def endGame(): Unit = {}
+  def reset(): Unit = {
+    score = 0
+    list = Nil
+  }
 
 }

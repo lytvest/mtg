@@ -41,7 +41,7 @@ object DeckShuffler {
     BreathOfLife() * 4,
     CarefulStudy() * 4,
     CatharticReunion() * 4,
-    Ponder() * 4,
+  //  Ponder() * 4,
     MerchantOfTheVale() * 4,
     DangerousWager() * 4,
     DarkRitual() * 4,
