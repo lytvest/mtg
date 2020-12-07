@@ -19,6 +19,7 @@ trait Agent {
   def nextCourse(current: State, nextState:State): Unit = {}
 
   def endGame(): Unit = {}
+  def startGame(): Unit = {}
   def reset(): Unit = {
     score = 0
     list = Nil

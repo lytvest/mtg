@@ -23,6 +23,7 @@ class Battle(val deck: Seq[Card], agent: Agent, val lesson: Lesson = Lesson.empt
 
 
   def run(): Unit = {
+    agent.startGame()
     mulligan()
     while (!lesson.isEnd(currentState))
       tick()
