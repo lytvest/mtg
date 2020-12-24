@@ -1,6 +1,6 @@
 package ru.bdm.mtg.teach
 
-import org.deeplearning4j.nn.conf.NeuralNetConfiguration
+import org.deeplearning4j.nn.conf.{MultiLayerConfiguration, NeuralNetConfiguration}
 import org.deeplearning4j.nn.conf.layers.{DenseLayer, OutputLayer}
 import org.deeplearning4j.nn.weights.WeightInit
 import org.nd4j.linalg.activations.Activation
@@ -8,6 +8,9 @@ import org.nd4j.linalg.learning.config.Nesterovs
 import org.nd4j.linalg.lossfunctions.LossFunctions.LossFunction
 import ru.bdm.mtg.AllSet.AllSetOps
 import ru.bdm.mtg.{Agent, Battle, DeckShuffler, InputCreate, State}
+
+import scala.collection.mutable
+
 
 object LearnAlgorithm extends App {
 
@@ -18,17 +21,35 @@ object LearnAlgorithm extends App {
   val conf = createConfig()
   //println(InputCreate(new Battle(DeckShuffler.allCard.getSeq, (current: State, outcomes: Seq[State]) => 0).currentState).size)
 
-  class LAgent extends Agent{
+  val ns = new NeuronSystem(conf)
+
+  var queue = mutable.Queue.empty[Info]
+
+  class LAgent extends Agent {
+    var res = List.empty[(Array[Double], Double)]
     override def chooseState(current: State, outcomes: Seq[State]): Int = {
-      outcomes.map(s => InputCreate())
+      outcomes.map(s => ns.calculate(InputCreate(current, s).toArray).head).zipWithIndex.max._2
+    }
+
+    override def nextCourse(current: State, nextState: State): Unit = {
+      res ::= InputCreate(current, nextState).toArray -> score
+    }
+
+    override def endGame(): Unit = {
+      var a = 1.0
+      val coef = 0.8
+      res.foreach{ e =>
+        queue.enqueue(Info(e, 0, a))
+        println(s"coef = $a")
+        a *= coef
+      }
     }
   }
 
 
-  val battle = new Battle()
 
 
-  private def createConfig() = {
+  private def createConfig(): MultiLayerConfiguration = {
     val learningRate = 0.1
     new NeuralNetConfiguration.Builder()
       .seed(4058)
