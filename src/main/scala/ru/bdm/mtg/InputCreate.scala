@@ -92,6 +92,8 @@ object InputCreate {
     apply(oldState) ++ apply(state)
   }
 
-
+  def plusScore(old: State, state:State): Seq[Double] = {
+    apply(old, state) :+ (state.score / 1000000)
+  }
 
 }

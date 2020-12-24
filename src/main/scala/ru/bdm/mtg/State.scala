@@ -17,7 +17,8 @@ case class State(
                   numberTurn: Int = 1,
                   endTurnDiscards: Int = 0,
                   playedLand: Boolean = false,
-                  shuffle: Boolean = false
+                  shuffle: Boolean = false,
+                  score: Double = .0
                 ) {
   override def toString: String =
     s"   mana{${manaPool.mkString(", ")}}" +
@@ -31,6 +32,7 @@ case class State(
       s"   graveyard{${graveyard.mkString(", ")}}" +
       s"   battlefield{${battlefield.mkString(", ")}}" +
       s"   topDeck{${topOfLibrary.mkString(", ")}}" +
+      s"   score{${score}}" +
       s"   library{${library.size}}"
 
 
@@ -49,7 +51,8 @@ case class State(
       next.numberTurn,
       next.endTurnDiscards,
       next.playedLand,
-      next.shuffle
+      next.shuffle,
+      next.score
     )
   }
 
