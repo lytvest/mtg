@@ -1,5 +1,7 @@
 package ru.bdm.mtg.teach
 
+import java.io.File
+
 import org.nd4j.common.primitives.Pair
 import org.deeplearning4j.datasets.iterator.{AbstractDataSetIterator, DoublesDataSetIterator}
 import org.deeplearning4j.nn.conf.{MultiLayerConfiguration, NeuralNetConfiguration}
@@ -11,16 +13,26 @@ import org.nd4j.linalg.factory.Nd4j
 
 import scala.jdk.CollectionConverters.IterableHasAsJava
 
-class NeuronSystem(val conf: MultiLayerConfiguration, printIteration:Int = 100) {
+class NeuronSystem(val conf: MultiLayerConfiguration, val fileName:String = "ns.save", val printIteration:Int = 100) {
 
-  val net = new MultiLayerNetwork(conf)
+
+  val net = try {
+      val n = MultiLayerNetwork.load(new File(fileName), false)
+      println(s"load ok! [$fileName]")
+      n
+    } catch {
+      case e: Exception =>
+        println(s"load fail ${e.getMessage}")
+        new MultiLayerNetwork(conf)
+    }
+
   net.init()
   // add an listener which outputs the error every 100 parameter updates
   net.setListeners(new ScoreIterationListener(printIteration))
   println(net.summary())
 
   def calculate(input: Array[Double]): Array[Double] = {
-    val in = Nd4j.create(input)
+    val in = Nd4j.create(Array(input))
     val out = net.output(in)
     out.toDoubleVector
   }
@@ -30,10 +42,11 @@ class NeuronSystem(val conf: MultiLayerConfiguration, printIteration:Int = 100) 
   }
 
 
-  def learnOne(inputs: Seq[Array[Double]], outputs: Seq[Array[Double]]): Unit = {
-    val ds = dataSetIterator(inputs, outputs)
-    net.fit(ds)
+  def learnOne(inputs: Array[Array[Double]], outputs: Array[Array[Double]]): Unit = {
+    net.fit(Nd4j.create(inputs), Nd4j.create(outputs))
   }
+
+  def epoch:Int = net.getIterationCount
 
   def dataSetIterator(inputs: Seq[Array[Double]], outputs: Seq[Array[Double]]): DoublesDataSetIterator = {
     val seq = inputs.zip(outputs).map{case (k,v) => {
@@ -41,5 +54,20 @@ class NeuronSystem(val conf: MultiLayerConfiguration, printIteration:Int = 100) 
     }}
 
     new DoublesDataSetIterator(seq.asJava, seq.size)
+  }
+
+  def save(_fileName: String = this.fileName): Unit ={
+    val file = new File(_fileName)
+    try {
+      file.getParentFile.mkdirs()
+    } catch {
+      case e:Exception =>
+    }
+    try {
+      net.save(file, false)
+    } catch {
+      case e: Exception =>
+        System.err.println(s"save fail ${e.getMessage}")
+    }
   }
 }
