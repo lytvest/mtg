@@ -32,7 +32,7 @@ object TestState extends App {
   while (true) {
     bp.teachOne(Seq(0.0,1.0,3.0), Seq(4.0))
     println(s"error=${bp.error} all=" + bp.errors.mkString("(", ", ", ")"))
-    println("ns work = " + ns.work(InputCreate(game.currentState)))
+    println("ns work = " + ns.work(InputCreate(game.state)))
   }
 
   //  var i = 0

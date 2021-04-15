@@ -23,6 +23,7 @@ case class State(
   override def toString: String =
     s"   mana{${manaPool.mkString(", ")}}" +
       s"   turn=$numberTurn" +
+      s"   phase=$phase" +
       s"   hand{${hand.mkString(", ")}}" +
       s"   lands{${lands.mkString(", ")}}" +
       s"   takeCards=$draw" +
@@ -36,43 +37,35 @@ case class State(
       s"   library{${library.size}}"
 
 
-  def getChanges(next: State): State = {
-    State(
-      changes(manaPool, next.manaPool),
-      changes(hand, next.hand),
-      changes(graveyard, next.graveyard),
-      changes(battlefield, next.battlefield),
+  def getChanges(next: State): Diff = {
+    Diff(
+      changes(hand, next.hand) ++
+      changes(graveyard, next.graveyard) ++
+      changes(battlefield, next.battlefield) ++
       changes(lands, next.lands),
-      next.library,
-      next.topOfLibrary,
-      next.phase,
-      next.draw,
-      next.discard,
       next.numberTurn,
-      next.endTurnDiscards,
-      next.playedLand,
-      next.shuffle,
-      next.score
+      next.manaPool
     )
   }
 
-  def changes[T](first: AllSet.Type[T], second: AllSet.Type[T]): Map[T, Int] = {
-    var result = AllSet.empty[T]
+  def changes[T](first: Map[T, Int], second: Map[T, Int]): Seq[Card] = {
+    var result = Seq.empty[Card]
     for ((elem, num) <- first) {
       if (second.contains(elem)) {
         if (num - second(elem) != 0)
-          result += elem -> -(num - second(elem))
+          result :+= elem.asInstanceOf[Card]
       } else
-        result += elem -> -num
+        result :+= elem.asInstanceOf[Card]
     }
     for ((elem, num) <- second) {
       if (!first.contains(elem))
-        result += elem -> num
+        result :+= elem.asInstanceOf[Card]
     }
     result
   }
 }
 
+case class Diff(seq: Seq[Card], turn: Int, mana: ManaPool.Type)
 
 
 
