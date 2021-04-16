@@ -1,14 +1,16 @@
 package ru.bdm.mtg
 
+import org.h2.Driver
 import ru.bdm.mtg.AllSet.AllSetOps
 import ru.bdm.mtg.actions.{Action, NextTurn}
 import ru.bdm.mtg.cards.{HandOfEmrakul, UlamogsCrusher}
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, File, FileOutputStream, InputStream, ObjectOutputStream}
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream, InputStream, ObjectOutputStream, OutputStream, PrintStream}
+import java.net.{ServerSocket, Socket}
 import java.sql.DriverManager
+import java.util.Scanner
 import scala.collection.mutable
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, CanAwait, ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, Future}
 import scala.io.StdIn
 import scala.io.StdIn.readLine
 
@@ -17,12 +19,12 @@ class ConsolePlayerBattle() {
   var state = BattleObserver.startState(DeckShuffler.allCard.getSeq)
 
   println("start battle")
-  while (!BattleObserver.isEndStates(state)){
+  while (!BattleObserver.isEndStates(state)) {
     println(state)
     val next = BattleObserver.nextStates(state)
     if (next.size > 1) {
       println("choose next state")
-      next.zipWithIndex.foreach{ case (state, index) =>
+      next.zipWithIndex.foreach { case (state, index) =>
         println(s"$index: $state")
       }
       print("choose number:")
@@ -36,31 +38,83 @@ class ConsolePlayerBattle() {
 
 }
 
-object Main{
+object Main {
   def main(args: Array[String]): Unit = {
     new NP().start()
   }
 
 }
-class NP{
+
+class SocketManager extends Thread{
+  val server = new ServerSocket(ClientSock.port)
+  implicit val executor = ExecutionContext.global
+
+  val clients = mutable.Map[Socket, PrintStream]()
+  setDaemon(true)
+
+  override def run(): Unit = {
+    while (!Thread.interrupted()) {
+      try {
+        val client = server.accept()
+        clients(client) = new PrintStream(client.getOutputStream)
+      } catch {
+        case e: Throwable =>
+          println(e.getMessage)
+      }
+    }
+  }
+
+  def print(s:String): Unit = {
+    Future {
+      var removed = List.empty[Socket]
+      for ((key, printer) <- clients) {
+        try {
+          if (key.isClosed)
+            removed ::= key
+          else
+            printer.println(s)
+        } catch {
+          case e: Throwable =>
+            key.close()
+            removed ::= key
+        }
+      }
+    }
+  }
+}
+object ClientSock{
+  val port = 23001
+
+  def main(arg: Array[String]): Unit = {
+
+    print("enter address:")
+    val sock = new Socket(readLine(), port)
+    val sc = new Scanner(sock.getInputStream)
+    while (true)
+      println(sc.nextLine())
+  }
+}
+
+class NP {
   var state = BattleObserver.startState(DeckShuffler.allCard.getSeq)
   implicit val executor = ExecutionContext.global
+  val sock = new SocketManager()
+  sock.start()
 
 
   var num_rec = 0
   val MB = 1024 * 1024.0
-  val MAX_HASH_SIZE = 100_000_000
-  var endsCount = 0
+  var endsCount = 0L
+  var endSuccess = 0L
 
-  val conn = DriverManager.getConnection("jdbc:h2:~/mtg-db", "bdm", "1234");
+  DriverManager.registerDriver(new Driver)
+  val conn = DriverManager.getConnection("jdbc:h2:~/mtg-db", "bdm", "1234")
 
-  val hashs = mutable.Map[State, Option[Int]]()
-  var futures = List[Future[Unit]]()
+  BattleObserver.nextStates(state).foreach{i => println(i.score)}
+
+
   def addInDatabase(state: State, value: Int): Unit = {
-    if(hashs.contains(state) && hashs(state).contains(value))
-      return
-    hashs(state) = Some(value)
-    futures ::= Future {
+    Future {
       val sql = "insert into mtg (state, value) values (?, ?);"
       val st = conn.prepareStatement(sql)
       st.setBinaryStream(1, getStream(state))
@@ -68,7 +122,8 @@ class NP{
       st.executeUpdate()
     }
   }
-  def getStream(state: State) : InputStream = {
+
+  def getStream(state: State): InputStream = {
     val stream = new ByteArrayOutputStream()
     val objStream = new ObjectOutputStream(stream)
     objStream.writeObject(state)
@@ -77,25 +132,10 @@ class NP{
     new ByteArrayInputStream(stream.toByteArray)
   }
 
-  def getFromDatabase(state: State): Option[Int] = {
-    if (hashs.contains(state))
-      return hashs(state)
-    Await.ready(Future.sequence(futures), Duration.Inf)
-    futures = Nil
-    if(hashs.size > MAX_HASH_SIZE)
-      hashs.clear()
-    val sql = "select value from mtg where state =?"
-    val pr = conn.prepareStatement(sql)
-    pr.setBinaryStream(1, getStream(state))
-    val set = pr.executeQuery()
-    val res = if (set.next()) Some(set.getInt("value")) else None
-    hashs(state) = res
-    res
-  }
-
   def memory = {
     Runtime.getRuntime.totalMemory() / MB
   }
+
   def maxMemory = {
     Runtime.getRuntime.maxMemory() / MB
   }
@@ -104,7 +144,7 @@ class NP{
   val iterPrint = 5000
   val start_time = System.currentTimeMillis()
 
-  def getTime(pr: Double): Double ={
+  def getTime(pr: Double): Double = {
     (System.currentTimeMillis() - start_time).toDouble / (10 * 60 * 60) / pr
   }
 
@@ -114,44 +154,48 @@ class NP{
 
   def f(state: State, st_p: Double, len_p: Double): Int = {
     onPrint(st_p)
-    val opt = getFromDatabase(state)
-    if (opt.isDefined) {
-      endPrint(state, opt.get)
-      return opt.get
-    }
-    if(BattleObserver.isEndStates(state)){
-      val res = if(BattleObserver.containsWinCard(state)) {
+
+    if (BattleObserver.isEndStates(state)) {
+      val res = if (BattleObserver.containsWinCard(state)) {
+        endSuccess += 1
         addInDatabase(state, state.numberTurn)
         state.numberTurn
       } else {
-        addInDatabase(state, Int.MaxValue)
         Int.MaxValue
       }
-      endPrint(state, res)
+      endPrint(st_p, res)
       return res
     }
     num_rec += 1
     val next = BattleObserver.nextStates(state)
     val len = len_p / next.size
-    val res = next.zipWithIndex.map{ case (s, i) =>
+    val res = next.sortBy(-_.score).zipWithIndex.map { case (s, i) =>
       f(s, st_p + i * len, len)
     }.min
-    addInDatabase(state, res)
+    if (res < Int.MaxValue)
+      addInDatabase(state, res)
     num_rec -= 1
     res
   }
 
 
   private def onPrint(percent: Double) = {
-    iter+=1
-    if (iter % iterPrint == 0)
-      println("-> " + num_rec  + " hash=" + hashs.size + " memory=" + memory + " / " + maxMemory + "   " + percent + "% time=" + getTime(percent))
+    iter += 1
+    //    if (iter % iterPrint == 0)
+    //      println("-> " + num_rec  + " memory=" + memory + " / " + maxMemory + "   " + percent + "% time=" + getTime(percent))
   }
 
-  private def endPrint(state: State, value: Int) = {
+  var min_num = Int.MaxValue
+
+  private def endPrint(percent: Double, value: Int) = {
     endsCount += 1
-    if (iter % iterPrint == 0)
-      println( "-> " + (num_rec + 1) + " end turn=" + (if(value == Int.MaxValue) "fail" else value) + " ends=" + endsCount + " memory=" + memory + " / " + maxMemory)
+    if (min_num > num_rec + 1)
+      min_num = num_rec + 1
+    if (iter % iterPrint == 0) {
+      val s = ("-> " + (num_rec + 1) + "(" + min_num + ") turn=" + (if (value == Int.MaxValue) "fail" else value) + " ends=" + endsCount + " success=" + endSuccess + " memory=" + memory + " / " + maxMemory + "   " + (percent * 1000).toInt / 1000.0 + "% time=" + getTime(percent))
+      println(s)
+      sock.print(s)
+    }
   }
 }
 
