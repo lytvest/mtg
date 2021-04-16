@@ -4,7 +4,7 @@ import ru.bdm.mtg.ManaPool.ManaPoolOps
 import ru.bdm.mtg.actions.Action
 import ru.bdm.mtg.conditions.Condition
 
-trait Card {
+trait Card extends Serializable {
 
   def name: String =
     getClass.getSimpleName

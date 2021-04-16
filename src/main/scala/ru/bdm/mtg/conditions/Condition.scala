@@ -2,7 +2,7 @@ package ru.bdm.mtg.conditions
 
 import ru.bdm.mtg.State
 
-trait Condition {
+trait Condition extends Serializable{
 
   def check(state: State): Boolean
 

@@ -2,7 +2,7 @@ package ru.bdm.mtg.actions
 
 import ru.bdm.mtg.State
 
-trait Action {
+trait Action extends Serializable {
   def act(state:State):Seq[State]
 
   def *(action: Action): Action =

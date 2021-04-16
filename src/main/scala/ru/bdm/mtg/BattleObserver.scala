@@ -4,6 +4,11 @@ import ru.bdm.mtg.AllSet.AllSetOps
 import ru.bdm.mtg.actions.{Action, NextTurn}
 import ru.bdm.mtg.cards.{HandOfEmrakul, UlamogsCrusher}
 
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream, File, FileOutputStream, InputStream, ObjectOutputStream}
+import java.sql.DriverManager
+import scala.collection.mutable
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, CanAwait, ExecutionContext, Future}
 import scala.io.StdIn
 import scala.io.StdIn.readLine
 
@@ -33,7 +38,120 @@ class ConsolePlayerBattle() {
 
 object Main{
   def main(args: Array[String]): Unit = {
-    new ConsolePlayerBattle()
+    new NP().start()
+  }
+
+}
+class NP{
+  var state = BattleObserver.startState(DeckShuffler.allCard.getSeq)
+  implicit val executor = ExecutionContext.global
+
+
+  var num_rec = 0
+  val MB = 1024 * 1024.0
+  val MAX_HASH_SIZE = 100_000_000
+  var endsCount = 0
+
+  val conn = DriverManager.getConnection("jdbc:h2:~/mtg-db", "bdm", "1234");
+
+  val hashs = mutable.Map[State, Option[Int]]()
+  var futures = List[Future[Unit]]()
+  def addInDatabase(state: State, value: Int): Unit = {
+    if(hashs.contains(state) && hashs(state).contains(value))
+      return
+    hashs(state) = Some(value)
+    futures ::= Future {
+      val sql = "insert into mtg (state, value) values (?, ?);"
+      val st = conn.prepareStatement(sql)
+      st.setBinaryStream(1, getStream(state))
+      st.setInt(2, value)
+      st.executeUpdate()
+    }
+  }
+  def getStream(state: State) : InputStream = {
+    val stream = new ByteArrayOutputStream()
+    val objStream = new ObjectOutputStream(stream)
+    objStream.writeObject(state)
+    objStream.flush()
+    objStream.close()
+    new ByteArrayInputStream(stream.toByteArray)
+  }
+
+  def getFromDatabase(state: State): Option[Int] = {
+    if (hashs.contains(state))
+      return hashs(state)
+    Await.ready(Future.sequence(futures), Duration.Inf)
+    futures = Nil
+    if(hashs.size > MAX_HASH_SIZE)
+      hashs.clear()
+    val sql = "select value from mtg where state =?"
+    val pr = conn.prepareStatement(sql)
+    pr.setBinaryStream(1, getStream(state))
+    val set = pr.executeQuery()
+    val res = if (set.next()) Some(set.getInt("value")) else None
+    hashs(state) = res
+    res
+  }
+
+  def memory = {
+    Runtime.getRuntime.totalMemory() / MB
+  }
+  def maxMemory = {
+    Runtime.getRuntime.maxMemory() / MB
+  }
+
+  var iter = 0
+  val iterPrint = 5000
+  val start_time = System.currentTimeMillis()
+
+  def getTime(pr: Double): Double ={
+    (System.currentTimeMillis() - start_time).toDouble / (10 * 60 * 60) / pr
+  }
+
+  def start(): Unit = {
+    f(state, 0.0, 100)
+  }
+
+  def f(state: State, st_p: Double, len_p: Double): Int = {
+    onPrint(st_p)
+    val opt = getFromDatabase(state)
+    if (opt.isDefined) {
+      endPrint(state, opt.get)
+      return opt.get
+    }
+    if(BattleObserver.isEndStates(state)){
+      val res = if(BattleObserver.containsWinCard(state)) {
+        addInDatabase(state, state.numberTurn)
+        state.numberTurn
+      } else {
+        addInDatabase(state, Int.MaxValue)
+        Int.MaxValue
+      }
+      endPrint(state, res)
+      return res
+    }
+    num_rec += 1
+    val next = BattleObserver.nextStates(state)
+    val len = len_p / next.size
+    val res = next.zipWithIndex.map{ case (s, i) =>
+      f(s, st_p + i * len, len)
+    }.min
+    addInDatabase(state, res)
+    num_rec -= 1
+    res
+  }
+
+
+  private def onPrint(percent: Double) = {
+    iter+=1
+    if (iter % iterPrint == 0)
+      println("-> " + num_rec  + " hash=" + hashs.size + " memory=" + memory + " / " + maxMemory + "   " + percent + "% time=" + getTime(percent))
+  }
+
+  private def endPrint(state: State, value: Int) = {
+    endsCount += 1
+    if (iter % iterPrint == 0)
+      println( "-> " + (num_rec + 1) + " end turn=" + (if(value == Int.MaxValue) "fail" else value) + " ends=" + endsCount + " memory=" + memory + " / " + maxMemory)
   }
 }
 
