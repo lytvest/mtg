@@ -1,8 +1,5 @@
 package ru.bdm.mtg
 
-import org.json4s.ShortTypeHints
-import org.json4s.native.Serialization
-
 import java.io.{File, PrintWriter}
 import java.nio.charset.Charset
 import java.nio.file.Files
@@ -22,6 +19,7 @@ class Battle(val deck: Seq[Card], agent: Agent, val lesson: Lesson = Lesson.empt
 
 
   def run(): Unit = {
+  //  agent.startGame()
     mulligan()
     while (!lesson.isEnd(state))
       tick()
