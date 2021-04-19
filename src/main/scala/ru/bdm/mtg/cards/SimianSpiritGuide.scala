@@ -6,7 +6,7 @@ import ru.bdm.mtg.conditions.{Condition, Discard, InHand, IsPlay}
 
 case class SimianSpiritGuide() extends Card {
 
-  override val description: Map[Condition, Action] = Map(
+  override def description: Map[Condition, Action] = Map(
     (IsPlay and InHand(this)) -> AddMana("R") * RemoveFromHand(this),
     Discard.standard(this)
   )

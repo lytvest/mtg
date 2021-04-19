@@ -6,7 +6,7 @@ import ru.bdm.mtg.conditions._
 
 case class Thriving(meColor: Char, restColor: String, override val active: Boolean = false, choose: Option[Char] = None) extends Permanent(active) {
 
-  override lazy val description: Map[Condition, Action] = Map(
+  override def description: Map[Condition, Action] = Map(
     (IsPlayFromHand(this) and NoPlayedLand) ->
       ((state: State) =>
         restColor flatMap { pool =>

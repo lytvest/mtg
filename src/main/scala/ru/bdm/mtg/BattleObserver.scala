@@ -3,12 +3,15 @@ package ru.bdm.mtg
 import org.h2.Driver
 import ru.bdm.mtg.AllSet.AllSetOps
 import ru.bdm.mtg.actions.{Action, NextTurn}
-import ru.bdm.mtg.cards.{HandOfEmrakul, UlamogsCrusher}
+import ru.bdm.mtg.cards.{Duress, HandOfEmrakul, LotusPetal, UlamogsCrusher}
+import ru.bdm.mtg.lands.Permanent
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, InputStream, ObjectOutputStream, OutputStream, PrintStream}
+import java.io._
 import java.net.{ServerSocket, Socket}
+import java.security.MessageDigest
 import java.sql.DriverManager
 import java.util.Scanner
+import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Future}
 import scala.io.StdIn
@@ -40,23 +43,37 @@ class ConsolePlayerBattle() {
 
 object Main {
   def main(args: Array[String]): Unit = {
-    new NP().start()
+    val np = new NP()
+    for (n <- 2 to 4) {
+      BattleObserver.N = n
+      for (i <- 1 to 100) {
+        println("start i=" + i)
+
+        np.start()
+      }
+    }
   }
 
 }
 
-class SocketManager extends Thread{
+class SocketManager extends Thread {
+  def close(): Unit = {
+    server.close()
+    clients = Map.empty
+    interrupt()
+  }
+
   val server = new ServerSocket(ClientSock.port)
   implicit val executor = ExecutionContext.global
 
-  val clients = mutable.Map[Socket, PrintStream]()
+  var clients = Map[Socket, PrintStream]()
   setDaemon(true)
 
   override def run(): Unit = {
     while (!Thread.interrupted()) {
       try {
         val client = server.accept()
-        clients(client) = new PrintStream(client.getOutputStream)
+        clients += client -> new PrintStream(client.getOutputStream)
       } catch {
         case e: Throwable =>
           println(e.getMessage)
@@ -64,7 +81,7 @@ class SocketManager extends Thread{
     }
   }
 
-  def print(s:String): Unit = {
+  def print(s: String): Unit = {
     Future {
       var removed = List.empty[Socket]
       for ((key, printer) <- clients) {
@@ -79,10 +96,12 @@ class SocketManager extends Thread{
             removed ::= key
         }
       }
+      clients --= removed
     }
   }
 }
-object ClientSock{
+
+object ClientSock {
   val port = 23001
 
   def main(arg: Array[String]): Unit = {
@@ -110,26 +129,76 @@ class NP {
   DriverManager.registerDriver(new Driver)
   val conn = DriverManager.getConnection("jdbc:h2:~/mtg-db", "bdm", "1234")
 
-  BattleObserver.nextStates(state).foreach{i => println(i.score)}
+  var startId: Option[Int] = None
+  var hashs = mutable.Map[Array[Byte], Int]()
+  var MAX_SIZE = 15000
+  var min_num = Int.MaxValue
+
+
+  var iter = 0
+  val iterPrint = 2000
+  var start_time = System.currentTimeMillis()
+
+  def getHash(state: State): Array[Byte] = {
+    MessageDigest.getInstance("MD5").digest(getStream(state))
+  }
+
+  def getTime(pr: Double): Double = {
+    ((System.currentTimeMillis() - start_time).toDouble / (10 * 60) / pr * 1000).toInt / 1000.0
+  }
+
+  def start(): Unit = {
+    state = BattleObserver.startState(DeckShuffler.allCard.getSeq)
+    hashs = mutable.Map.empty
+    iter = 0
+    start_time = System.currentTimeMillis()
+    startId = None
+    num_rec = 0
+    endsCount = 0L
+    endSuccess = 0L
+    min_num = Int.MaxValue
+    f(state, 0.0, 100)
+  }
+
+  def firstAdd(): Unit = {
+
+    val state_arr = getStream(state)
+
+    val sql1 = "insert into starts (state, len) values (?, ?);"
+
+    val st = conn.prepareStatement(sql1)
+    st.setBinaryStream(1, new ByteArrayInputStream(state_arr))
+    st.setInt(2, BattleObserver.N)
+    st.executeUpdate()
+    val sql2 = "select id from starts where state = ?;"
+    val st1 = conn.prepareStatement(sql2)
+    st1.setBinaryStream(1, new ByteArrayInputStream(state_arr))
+    val set = st1.executeQuery()
+    set.next()
+    startId = Some(set.getInt("id"))
+    println(s"firtst add $startId")
+  }
 
 
   def addInDatabase(state: State, value: Int): Unit = {
-    Future {
-      val sql = "insert into mtg (state, value) values (?, ?);"
-      val st = conn.prepareStatement(sql)
-      st.setBinaryStream(1, getStream(state))
-      st.setInt(2, value)
-      st.executeUpdate()
-    }
+    if (startId.isEmpty)
+      firstAdd()
+
+    val sql = "insert into mtg (state, value, start) values (?, ?, ?);"
+    val st = conn.prepareStatement(sql)
+
+    st.setBinaryStream(1, new ByteArrayInputStream(getHash(state)))
+    st.setInt(2, value)
+    st.setInt(3, startId.get)
+    st.executeUpdate()
+
   }
 
-  def getStream(state: State): InputStream = {
-    val stream = new ByteArrayOutputStream()
-    val objStream = new ObjectOutputStream(stream)
-    objStream.writeObject(state)
-    objStream.flush()
-    objStream.close()
-    new ByteArrayInputStream(stream.toByteArray)
+  def getStream(state: State): Array[Byte] = {
+    val arr = new ByteArrayOutputStream()
+    val print = new ObjectOutputStream(arr)
+    print.writeObject(state)
+    arr.toByteArray
   }
 
   def memory = {
@@ -140,20 +209,16 @@ class NP {
     Runtime.getRuntime.maxMemory() / MB
   }
 
-  var iter = 0
-  val iterPrint = 5000
-  val start_time = System.currentTimeMillis()
-
-  def getTime(pr: Double): Double = {
-    (System.currentTimeMillis() - start_time).toDouble / (10 * 60 * 60) / pr
-  }
-
-  def start(): Unit = {
-    f(state, 0.0, 100)
-  }
 
   def f(state: State, st_p: Double, len_p: Double): Int = {
+    if(st_p > 50 && startId.isEmpty)
+      return Int.MaxValue
+
     onPrint(st_p)
+    val hash = getHash(state)
+    if (hashs.contains(hash))
+      return hashs(hash)
+
 
     if (BattleObserver.isEndStates(state)) {
       val res = if (BattleObserver.containsWinCard(state)) {
@@ -164,6 +229,9 @@ class NP {
         Int.MaxValue
       }
       endPrint(st_p, res)
+      hashs(hash) = res
+      if (hashs.size > MAX_SIZE)
+        hashs.clear()
       return res
     }
     num_rec += 1
@@ -172,27 +240,31 @@ class NP {
     val res = next.sortBy(-_.score).zipWithIndex.map { case (s, i) =>
       f(s, st_p + i * len, len)
     }.min
+
     if (res < Int.MaxValue)
       addInDatabase(state, res)
     num_rec -= 1
+    hashs(hash) = res
+    if (hashs.size > MAX_SIZE)
+      hashs.clear()
     res
   }
 
 
   private def onPrint(percent: Double) = {
     iter += 1
-    //    if (iter % iterPrint == 0)
-    //      println("-> " + num_rec  + " memory=" + memory + " / " + maxMemory + "   " + percent + "% time=" + getTime(percent))
+
+   // if (iter % iterPrint == 0)
+   //   println("-> " + num_rec + " [" + iter + "] memory=" + memory + " / " + maxMemory + "   " + percent + "% time=" + getTime(percent))
   }
 
-  var min_num = Int.MaxValue
 
   private def endPrint(percent: Double, value: Int) = {
     endsCount += 1
     if (min_num > num_rec + 1)
       min_num = num_rec + 1
-    if (iter % iterPrint == 0) {
-      val s = ("-> " + (num_rec + 1) + "(" + min_num + ") turn=" + (if (value == Int.MaxValue) "fail" else value) + " ends=" + endsCount + " success=" + endSuccess + " memory=" + memory + " / " + maxMemory + "   " + (percent * 1000).toInt / 1000.0 + "% time=" + getTime(percent))
+    if (endsCount % iterPrint == 0) {
+      val s = ("-> " + (num_rec + 1) + "(" + min_num + ") turn=" + (if (value == Int.MaxValue) "fail" else value) + " ends=" + endsCount + " success=" + endSuccess + " memory=" + memory + " / " + maxMemory + "   " + (percent * 1000).toInt / 1000.0 + "% time=" + getTime(percent) + " min")
       println(s)
       sock.print(s)
     }
@@ -200,13 +272,29 @@ class NP {
 }
 
 object BattleObserver {
-  private val shuffler = new DeckShuffler(34)
+  var N = 3
+  private val shuffler = new DeckShuffler(System.currentTimeMillis())
 
   def startState(deck: Seq[Card]): State =
     State(library = shuffler.shuffle(deck)).copy(draw = 7)
 
+  @tailrec
+  def nextStatesSkipOnes(state: State): Seq[State] = {
+    val next = nextStates(state)
+    if (next.size > 1)
+      next
+    else
+      nextStatesSkipOnes(next.head)
+  }
+
   def nextStates(state: State): Seq[State] = {
-    if (state.phase == Phase.takeFirst && state.draw > 0)
+    nextStatesNotScore(state).map { st =>
+      st.copy(score = evaluate(state, st))
+    }
+  }
+
+  def nextStatesNotScore(state: State): Seq[State] = {
+    val res = if (state.phase == Phase.takeFirst && state.draw > 0)
       applyDraws(state)
     else if (state.phase == Phase.discardFirst && state.discard > 0)
       applyDiscards(state)
@@ -218,19 +306,17 @@ object BattleObserver {
       applyShuffleLibrary(state)
     else
       applyPlay(state)
+
+    if (res.isEmpty) applyPlay(state) else res
   }
 
-  val winsCards = Seq(HandOfEmrakul(), HandOfEmrakul(true), UlamogsCrusher(), UlamogsCrusher(true))
 
   def containsWinCard(state: State): Boolean = {
-    for (card <- winsCards)
-      if (state.battlefield.contains(card))
-        return true
-    false
+    countWinCard(state.battlefield.getSeq) > 0
   }
 
   def isEndStates(state: State): Boolean = {
-    state.numberTurn >= 7 || containsWinCard(state)
+    state.numberTurn >= N || containsWinCard(state)
   }
 
   private def applyPlay(state: State): Seq[State] = {
@@ -281,5 +367,58 @@ object BattleObserver {
       topOfLibrary = state.topOfLibrary.drop(state.draw),
       library = state.library.drop(Math.max(state.draw - state.topOfLibrary.size, 0)),
       draw = 0)
+  }
+
+  def countWinCard(seq: Seq[Card]): Int = seq.count {
+    case _: UlamogsCrusher => true
+    case _: HandOfEmrakul => true
+    case _ => false
+  }
+
+  def count[CARD, CL](set: Map[CARD, Int], cls: Class[CL]): Int = set.map { v =>
+    if (cls.isInstance(v._1)) {
+      v._2
+    } else
+      0
+  }.sum
+
+  def contains[CARD, CL](set: Map[CARD, Int], cls: Class[CL]): Boolean = count[CARD, CL](set, cls) > 0
+
+  def evaluate(stateOld: State, stateCurrent: State): Double = {
+    var sum = 0.0
+    val mana = stateCurrent.manaPool.getSeq.size - stateOld.manaPool.getSeq.size
+    val winCardInGraveyard = countWinCard(stateCurrent.graveyard.getSeq) > 0
+    if (mana > 0) {
+      if (winCardInGraveyard)
+        sum += mana * 0.1
+      else
+        sum -= mana * 0.1
+      if (countAddBattle(classOf[Permanent]) < 0)
+        sum -= mana * 0.01
+    }
+
+    def countAddBattle[CL](cls: Class[CL]) =
+      count(stateCurrent.battlefield, cls) - count(stateOld.battlefield, cls)
+
+    def countAddLands[CL](cls: Class[CL]) =
+      count(stateCurrent.lands, cls) - count(stateOld.lands, cls)
+
+    def countAddHand[CL](cls: Class[CL]) =
+      count(stateCurrent.hand, cls) - count(stateOld.hand, cls)
+
+    if (countAddBattle(classOf[LotusPetal]) > 0)
+      sum += 1.1
+    if (countAddLands(classOf[Permanent]) > 0)
+      sum += 1
+    if (countAddHand(classOf[Duress]) < 0 && count(stateCurrent.hand, classOf[Duress]) == 0)
+      sum -= 3
+
+    sum += stateCurrent.lands.getSeq.size * 1
+    sum += stateCurrent.battlefield.getSeq.size * 0.5
+    sum += countWinCard(stateCurrent.battlefield.getSeq) * 1000.0
+    if (stateCurrent.numberTurn != stateOld.numberTurn) {
+      sum -= stateCurrent.manaPool.getSeq.size
+    }
+    sum
   }
 }

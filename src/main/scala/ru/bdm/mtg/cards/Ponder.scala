@@ -23,7 +23,7 @@ case class Ponder() extends Card {
     }
   }
 
-  override val description: Map[Condition, Action] = Map(
+  override def description: Map[Condition, Action] = Map(
     IsPlayFromHandAndMana(this, "U") -> PonderAction * TakeCards(1) * RemoveFromHandAndMana(this, "U"),
     Discard.standard(this)
   )

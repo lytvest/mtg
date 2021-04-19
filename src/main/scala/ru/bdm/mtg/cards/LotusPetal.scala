@@ -6,7 +6,7 @@ import ru.bdm.mtg.lands.Permanent
 
 case class LotusPetal(override val active: Boolean = true) extends Permanent(active) {
 
-  override val description: Map[Condition, Action] = Map(
+  override def description: Map[Condition, Action] = Map(
     (IsPlay and InHand(this)) -> RemoveFromHand(this) * AddBattlefield(this),
     (IsPlay and IsBattlefield(this)) -> RemoveFromBattlefield(this) * AddDifferentColors("WUBR", 1),
     Discard.standard(this)

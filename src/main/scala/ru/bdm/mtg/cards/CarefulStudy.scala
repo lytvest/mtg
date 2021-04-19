@@ -9,7 +9,7 @@ case class CarefulStudy() extends Card {
   val cost: String = "U"
 
 
-  override val description: Map[Condition, Action] = Map(
+  override def description: Map[Condition, Action] = Map(
     IsPlayFromHandAndMana(this, cost) -> AddDiscard(2) * TakeCards(2) * RemoveFromHandAndMana(this, cost),
     Discard.standard(this)
   )

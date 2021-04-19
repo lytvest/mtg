@@ -6,7 +6,7 @@ import ru.bdm.mtg.conditions.{Condition, Discard, InHand, IsPlayFromHandAndMana,
 
 case class DarkRitual() extends Card {
 
-  override val description: Map[Condition, Action] = Map(
+  override def description: Map[Condition, Action] = Map(
     IsPlayFromHandAndMana(this, "B") -> AddMana("BB") * RemoveFromHand(this),
     Discard.standard(this)
   )

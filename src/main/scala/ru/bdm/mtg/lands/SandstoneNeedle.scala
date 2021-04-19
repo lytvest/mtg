@@ -6,7 +6,7 @@ import ru.bdm.mtg.conditions._
 case class SandstoneNeedle(override val active: Boolean = false, count: Int = 2) extends Permanent(active) {
 
 
-  override val description: Map[Condition, Action] = Map(
+  override def description: Map[Condition, Action] = Map(
     (IsPlayFromHand(this) and NoPlayedLand) -> AddLand(this) * RemoveFromHand(this),
     IsTappedLand(this) -> AddMana("RR") * TemporaryLand(this, count, new SandstoneNeedle(false, _)),
     Discard.standard(this)

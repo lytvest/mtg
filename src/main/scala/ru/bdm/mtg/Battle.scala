@@ -1,10 +1,11 @@
 package ru.bdm.mtg
 
+import org.json4s.ShortTypeHints
+import org.json4s.native.Serialization
+
 import java.io.{File, PrintWriter}
 import java.nio.charset.Charset
 import java.nio.file.Files
-
-
 import ru.bdm.mtg.AllSet.AllSetOps
 import ru.bdm.mtg.actions.{Action, NextTurn}
 import ru.bdm.mtg.cards.{BreathOfLife, CarefulStudy, CatharticReunion, DangerousWager, DarkRitual, DeepAnalysis, DragonBreath, Duress, Exhume, FaithlessLooting, HandOfEmrakul, IdeasUnbound, InsolentNeonate, LotusPetal, Manamorphose, MerchantOfTheVale, Ponder, RiseAgain, SimianSpiritGuide, ThrillOfPossibility, TolarianWinds, UlamogsCrusher}
@@ -105,18 +106,18 @@ class Battle(val deck: Seq[Card], agent: Agent, val lesson: Lesson = Lesson.empt
     state.hand.keys ++ state.lands.keys ++ state.graveyard.keys ++ state.battlefield.keys
 
 
-//  def save(fileName: String = ""): Unit = {
-//    implicit val formats = Serialization.formats(Battle.formats)
+  def save(fileName: String = ""): Unit = {
+//    implicit val formats = Battle.formats
 //    val files = new File("saves/").listFiles
 //    val count = if (files != null) files.count(_.getName.endsWith(".json")) + 1 else 1
 //    val name = if (fileName.isEmpty) agent.name + "_" + count + ".json" else fileName
-//    Serialization.write(BattleWrite(seed, deck, agent.list), new PrintWriter("saves/" + name, Charset.forName("UTF-8"))).close()
-//  }
+    //Serialization.write(BattleWrite(seed, deck, agent.list), new PrintWriter("saves/" + name).close())
+  }
 
 }
 
 object Battle {
-//  val formats = new ShortTypeHints(List(
+//  val format = new ShortTypeHints(List(
 //
 //    classOf[CrumblingVestige],
 //    classOf[Mountain],
@@ -149,4 +150,6 @@ object Battle {
 //  )) {
 //    override val typeHintFieldName: String = "name"
 //  }
+//
+//  implicit val formats = Serialization.formats(Battle.format)
 }

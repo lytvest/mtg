@@ -7,7 +7,7 @@ import ru.bdm.mtg.conditions.{Condition, CountInHand, Discard, IsPlayFromHandAnd
 case class CatharticReunion() extends Card {
   val cost: String = "CR"
 
-  override val description: Map[Condition, Action] = Map(
+  override def description: Map[Condition, Action] = Map(
     (IsPlayFromHandAndMana(this, cost) and CountInHand(_ > 2)) -> TakeCards(3) * AddDiscard(2) * RemoveFromHandAndMana(this, cost),
     Discard.standard(this)
   )

@@ -7,7 +7,7 @@ import ru.bdm.mtg.{Card, State}
 
 case class RiseAgain() extends Card {
   val cost: String = "CCCCB"
-  override val description: Map[Condition, Action] = Map(
+  override def description: Map[Condition, Action] = Map(
     IsPlayFromHandAndMana(this, cost) -> Reanimation * RemoveFromHandAndMana(this, cost),
     Discard.standard(this)
   )

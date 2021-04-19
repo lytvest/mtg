@@ -6,7 +6,7 @@ import ru.bdm.mtg.conditions.{Condition, Discard, IsPlayFromHandAndMana}
 
 case class BreathOfLife() extends Card {
 
-  override val description: Map[Condition, Action] = Map(
+  override def description: Map[Condition, Action] = Map(
     IsPlayFromHandAndMana(this, "CCCW") -> Reanimation * RemoveFromHandAndMana(this, "CCCW"),
     Discard.standard(this)
   )
