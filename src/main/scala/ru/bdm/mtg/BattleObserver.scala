@@ -44,7 +44,7 @@ class ConsolePlayerBattle() {
 object Main {
   def main(args: Array[String]): Unit = {
     val np = new NP()
-    for (n <- 2 to 4) {
+    for (n <- 2 to 5) {
       BattleObserver.N = n
       for (i <- 1 to 100) {
         println("start i=" + i)
@@ -147,7 +147,10 @@ class NP {
     ((System.currentTimeMillis() - start_time).toDouble / (10 * 60) / pr * 1000).toInt / 1000.0
   }
 
+  var startsCount = 0
+
   def start(): Unit = {
+    startsCount += 1
     state = BattleObserver.startState(DeckShuffler.allCard.getSeq)
     hashs = mutable.Map.empty
     iter = 0
@@ -158,13 +161,14 @@ class NP {
     endSuccess = 0L
     min_num = Int.MaxValue
     f(state, 0.0, 100)
+    fullEndDatabase()
   }
 
   def firstAdd(): Unit = {
 
     val state_arr = getStream(state)
 
-    val sql1 = "insert into starts (state, len) values (?, ?);"
+    val sql1 = "insert into starts (state, len, i) values (?, ?, false);"
 
     val st = conn.prepareStatement(sql1)
     st.setBinaryStream(1, new ByteArrayInputStream(state_arr))
@@ -179,6 +183,15 @@ class NP {
     println(s"firtst add $startId")
   }
 
+
+  def fullEndDatabase(): Unit = {
+    if (startId.isDefined){
+      val sql = "update starts set i = true where id = (?);"
+      val st = conn.prepareStatement(sql)
+      st.setInt(1, startId.get)
+      st.executeUpdate()
+    }
+  }
 
   def addInDatabase(state: State, value: Int): Unit = {
     if (startId.isEmpty)
@@ -211,7 +224,7 @@ class NP {
 
 
   def f(state: State, st_p: Double, len_p: Double): Int = {
-    if(st_p > 50 && startId.isEmpty)
+    if((st_p > 50 || endsCount > 1000000) && startId.isEmpty )
       return Int.MaxValue
 
     onPrint(st_p)
@@ -264,7 +277,7 @@ class NP {
     if (min_num > num_rec + 1)
       min_num = num_rec + 1
     if (endsCount % iterPrint == 0) {
-      val s = ("-> " + (num_rec + 1) + "(" + min_num + ") turn=" + (if (value == Int.MaxValue) "fail" else value) + " ends=" + endsCount + " success=" + endSuccess + " memory=" + memory + " / " + maxMemory + "   " + (percent * 1000).toInt / 1000.0 + "% time=" + getTime(percent) + " min")
+      val s = ("-> " + (num_rec + 1) + "(" + min_num + ") [" + startsCount + "] turn=" + (if (value == Int.MaxValue) "fail" else value) + " ends=" + endsCount + " success=" + endSuccess + " memory=" + memory + " / " + maxMemory + "   " + (percent * 1000).toInt / 1000.0 + "% time=" + getTime(percent) + " min")
       println(s)
       sock.print(s)
     }
