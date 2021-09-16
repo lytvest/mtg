@@ -10,7 +10,7 @@ import java.io._
 import java.net.{ServerSocket, Socket}
 import java.security.MessageDigest
 import java.sql.DriverManager
-import java.util.Scanner
+import java.util.{Base64, Scanner}
 import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Future}
@@ -50,6 +50,8 @@ object Main {
         println("start i=" + i)
 
         np.start()
+        if(np.END)
+          return
       }
     }
   }
@@ -113,6 +115,17 @@ object ClientSock {
       println(sc.nextLine())
   }
 }
+object H {
+  def getHash(state: State): Array[Byte] = {
+    MessageDigest.getInstance("MD5").digest(state.toString.getBytes)
+  }
+  def getStream(state: State): Array[Byte] = {
+    val arr = new ByteArrayOutputStream()
+    val print = new ObjectOutputStream(arr)
+    print.writeObject(state)
+    arr.toByteArray
+  }
+}
 
 class NP {
   var state = BattleObserver.startState(DeckShuffler.allCard.getSeq)
@@ -125,31 +138,38 @@ class NP {
   val MB = 1024 * 1024.0
   var endsCount = 0L
   var endSuccess = 0L
+  var END = false
+  val endFuture = Future {
+    StdIn.readLine()
+    END = true
+  }
 
   DriverManager.registerDriver(new Driver)
   val conn = DriverManager.getConnection("jdbc:h2:~/mtg-db", "bdm", "1234")
 
   var startId: Option[Int] = None
   var hashs = mutable.Map[Array[Byte], Int]()
-  var MAX_SIZE = 15000
+  var MAX_SIZE = 2000000
   var min_num = Int.MaxValue
 
 
   var iter = 0
-  val iterPrint = 2000
+  val iterPrint = 5000
   var start_time = System.currentTimeMillis()
 
-  def getHash(state: State): Array[Byte] = {
-    MessageDigest.getInstance("MD5").digest(getStream(state))
-  }
+
 
   def getTime(pr: Double): Double = {
-    ((System.currentTimeMillis() - start_time).toDouble / (10 * 60) / pr * 1000).toInt / 1000.0
+    val t = (System.currentTimeMillis() - start_time).toDouble / (1000 * 60)
+    (t / pr * (100 - pr) * 1000).toInt / 1000.0
   }
 
   var startsCount = 0
 
+  val hashTs = mutable.Map[Array[Byte], State]()
+
   def start(): Unit = {
+    hashTs.clear()
     startsCount += 1
     state = BattleObserver.startState(DeckShuffler.allCard.getSeq)
     hashs = mutable.Map.empty
@@ -166,7 +186,7 @@ class NP {
 
   def firstAdd(): Unit = {
 
-    val state_arr = getStream(state)
+    val state_arr = H.getStream(state)
 
     val sql1 = "insert into starts (state, len, i) values (?, ?, false);"
 
@@ -191,6 +211,7 @@ class NP {
       st.setInt(1, startId.get)
       st.executeUpdate()
     }
+    println(s"end add in database $startId")
   }
 
   def addInDatabase(state: State, value: Int): Unit = {
@@ -200,19 +221,16 @@ class NP {
     val sql = "insert into mtg (state, value, start) values (?, ?, ?);"
     val st = conn.prepareStatement(sql)
 
-    st.setBinaryStream(1, new ByteArrayInputStream(getHash(state)))
+    st.setBinaryStream(1, new ByteArrayInputStream(H.getHash(state)))
     st.setInt(2, value)
     st.setInt(3, startId.get)
     st.executeUpdate()
 
+
+
   }
 
-  def getStream(state: State): Array[Byte] = {
-    val arr = new ByteArrayOutputStream()
-    val print = new ObjectOutputStream(arr)
-    print.writeObject(state)
-    arr.toByteArray
-  }
+
 
   def memory = {
     Runtime.getRuntime.totalMemory() / MB
@@ -224,11 +242,19 @@ class NP {
 
 
   def f(state: State, st_p: Double, len_p: Double): Int = {
-    if((st_p > 50 || endsCount > 1000000) && startId.isEmpty )
+    if((st_p > 50 || endsCount > 500_000) && startId.isEmpty || endsCount > 50_000_000 || END)
       return Int.MaxValue
 
+
+
     onPrint(st_p)
-    val hash = getHash(state)
+    val hash = H.getHash(state)
+
+//    if(hashTs.contains(hash) && hashTs(hash) != state)
+//      System.err.println("error EQ!!!! [" + hashTs.size + "]")
+//    else
+//      hashTs(hash) = state
+
     if (hashs.contains(hash))
       return hashs(hash)
 
@@ -241,7 +267,7 @@ class NP {
       } else {
         Int.MaxValue
       }
-      endPrint(st_p, res)
+      endPrint(st_p , res)
       hashs(hash) = res
       if (hashs.size > MAX_SIZE)
         hashs.clear()
@@ -254,8 +280,9 @@ class NP {
       f(s, st_p + i * len, len)
     }.min
 
-    if (res < Int.MaxValue)
+    if (res < Int.MaxValue) {
       addInDatabase(state, res)
+    }
     num_rec -= 1
     hashs(hash) = res
     if (hashs.size > MAX_SIZE)

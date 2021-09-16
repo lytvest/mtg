@@ -20,8 +20,8 @@ case class State(
                   shuffle: Boolean = false,
                   score: Double = .0
                 ) extends Serializable {
-  override def toString: String =
-    s"   mana{${manaPool.mkString(", ")}}" +
+  def string: String =
+    s" mana{${manaPool.mkString(", ")}}" +
       s"   turn=$numberTurn" +
       s"   phase=$phase" +
       s"   hand{${hand.mkString(", ")}}" +

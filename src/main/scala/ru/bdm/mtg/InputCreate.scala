@@ -77,7 +77,7 @@ object InputCreate {
 
 
 
-  def apply(state: State): Seq[Double] = {
+  def apply(state: State): Array[Double] = {
 
     (mana.map(count => state.manaPool.getOrElse(count, 0) / 10d) ++
       lands.map(land => state.lands.getOrElse(land, 0) / 4d) ++
@@ -85,14 +85,14 @@ object InputCreate {
       hand.map(card => state.hand.getOrElse(card, 0) / 4d) ++
       graveyard.map(card => state.graveyard.getOrElse(card, 0) / 4d) ++
       Seq(state.discard / 7d, state.endTurnDiscards / 3d, state.draw / 7d, state.numberTurn / 10d, if (state.playedLand)  1d else 0d)
-      ).map(_ - 0.5)
+      ).map(_ - 0.5).toArray
   }
 
-  def apply(oldState:State, state:State): Seq[Double] = {
+  def apply(oldState:State, state:State): Array[Double] = {
     apply(oldState) ++ apply(state)
   }
 
-  def plusScore(old: State, state:State): Seq[Double] = {
+  def plusScore(old: State, state:State): Array[Double] = {
     apply(old, state) :+ (state.score / 1000000)
   }
 
